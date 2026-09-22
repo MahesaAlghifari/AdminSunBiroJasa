@@ -370,8 +370,14 @@ function AppContent() {
               <Menu className="w-4 h-4" />
             </Button>
             <div>
-              <h2 className="text-sm md:text-base leading-tight">{getPageTitle()}</h2>
-              <p className="text-[11px] text-muted-foreground hidden sm:block">Kelola {getPageTitle().toLowerCase()} Anda</p>
+              <h2 className="text-sm md:text-base leading-tight">
+                {currentPage.startsWith("finance") ? "Finance" : getPageTitle()}
+              </h2>
+              <p className="text-[11px] text-muted-foreground hidden sm:block">
+                {currentPage.startsWith("finance")
+                  ? "Kelola keuangan dan profit bisnis Anda"
+                  : `Kelola ${getPageTitle().toLowerCase()} Anda`}
+              </p>
             </div>
           </div>
 

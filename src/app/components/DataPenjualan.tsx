@@ -1,413 +1,470 @@
 import { useState } from "react";
-import { motion } from "motion/react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Card } from "./ui/card";
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
-import { Badge } from "./ui/badge";
-import { Plus, Download, Search, FileText, Edit, Trash2, Eye } from "lucide-react";
+import { FileText } from "lucide-react";
 import { ScrollArea } from "./ui/scroll-area";
-import { EnhancedTable } from "./EnhancedTable";
+import { EnhancedTableWithDialogs, Column } from "./EnhancedTableWithDialogs";
+import { FinanceAddPage, FieldConfig } from "./FinanceAddPage";
+import { FinanceDetailPage } from "./FinanceDetailPage";
 import { toast } from "sonner";
 import { 
+  mutasiLDData as initialMutasiLDData,
+  mutasiASData as initialMutasiASData,
+  bbnData as initialBBNData,
+  perpanjanganPajakData as initialPerpanjanganData,
+  lainnyaData as initialLainnyaData,
   belumKurangBayarData as initialBelumBayarData,
   profitTerpendingData as initialProfitPendingData,
   cashbackTerpendingData as initialCashbackPendingData
-} from "./Finance";
-
-// Sample data untuk setiap tabel - masing-masing 10 items
-const mutasiLDData = [
-  { id: 1, tglMasuk: "01/11/2024", r4r2: "R4", nopol: "B 1234 ABC", customer: "PT. MAJU JAYA", namaSesuaiBPKB: "BUDI SANTOSO", jenisPengurusan: "Mutasi LD", jenisBayar: "Transfer", tglUangMasuk: "02/11/2024", uangMasuk: 5000000, bank: "BCA", uangKeluar: 3500000, tglUangKeluar: "03/11/2024", uangKeluarDari: "Kas Kantor", profit: 1500000, status: "Selesai", noInvoice: "INV-LD-001", tglInvoice: "01/11/2024", tandaTerima: "TT-001", bpkb: "Ada", statusBPKB: "Selesai", ttbBPKB: "TTB-001" },
-  { id: 2, tglMasuk: "02/11/2024", r4r2: "R2", nopol: "D 5678 EFG", customer: "TOKO SEJAHTERA", namaSesuaiBPKB: "AHMAD WIJAYA", jenisPengurusan: "Mutasi LD", jenisBayar: "Cash", tglUangMasuk: "03/11/2024", uangMasuk: 4800000, bank: "Cash", uangKeluar: 3300000, tglUangKeluar: "04/11/2024", uangKeluarDari: "Kas Kantor", profit: 1500000, status: "Selesai", noInvoice: "INV-LD-002", tglInvoice: "02/11/2024", tandaTerima: "TT-002", bpkb: "Ada", statusBPKB: "Selesai", ttbBPKB: "TTB-002" },
-  { id: 3, tglMasuk: "03/11/2024", r4r2: "R4", nopol: "F 9012 HIJ", customer: "CV. MANDIRI", namaSesuaiBPKB: "SUSAN TAN", jenisPengurusan: "Mutasi LD", jenisBayar: "Transfer", tglUangMasuk: "04/11/2024", uangMasuk: 5200000, bank: "Mandiri", uangKeluar: 3600000, tglUangKeluar: "05/11/2024", uangKeluarDari: "Kas Kantor", profit: 1600000, status: "Proses", noInvoice: "INV-LD-003", tglInvoice: "03/11/2024", tandaTerima: "-", bpkb: "Belum", statusBPKB: "Proses", ttbBPKB: "-" },
-  { id: 4, tglMasuk: "04/11/2024", r4r2: "R2", nopol: "B 3456 KLM", customer: "WARUNG MAKAN", namaSesuaiBPKB: "SLAMET RIYADI", jenisPengurusan: "Mutasi LD", jenisBayar: "Transfer", tglUangMasuk: "05/11/2024", uangMasuk: 4700000, bank: "BRI", uangKeluar: 3200000, tglUangKeluar: "06/11/2024", uangKeluarDari: "Kas Kantor", profit: 1500000, status: "Selesai", noInvoice: "INV-LD-004", tglInvoice: "04/11/2024", tandaTerima: "TT-004", bpkb: "Ada", statusBPKB: "Selesai", ttbBPKB: "TTB-004" },
-  { id: 5, tglMasuk: "05/11/2024", r4r2: "R4", nopol: "D 7890 NOP", customer: "SALON CANTIK", namaSesuaiBPKB: "RATNA SARI", jenisPengurusan: "Mutasi LD", jenisBayar: "Transfer", tglUangMasuk: "06/11/2024", uangMasuk: 5100000, bank: "BCA", uangKeluar: 3450000, tglUangKeluar: "07/11/2024", uangKeluarDari: "Kas Kantor", profit: 1650000, status: "Selesai", noInvoice: "INV-LD-005", tglInvoice: "05/11/2024", tandaTerima: "TT-005", bpkb: "Ada", statusBPKB: "Selesai", ttbBPKB: "TTB-005" },
-  { id: 6, tglMasuk: "06/11/2024", r4r2: "R2", nopol: "F 2468 QRS", customer: "BENGKEL MOTOR", namaSesuaiBPKB: "JOKO SANTOSO", jenisPengurusan: "Mutasi LD", jenisBayar: "Cash", tglUangMasuk: "07/11/2024", uangMasuk: 4900000, bank: "Cash", uangKeluar: 3400000, tglUangKeluar: "08/11/2024", uangKeluarDari: "Kas Kantor", profit: 1500000, status: "Selesai", noInvoice: "INV-LD-006", tglInvoice: "06/11/2024", tandaTerima: "TT-006", bpkb: "Ada", statusBPKB: "Selesai", ttbBPKB: "TTB-006" },
-  { id: 7, tglMasuk: "07/11/2024", r4r2: "R4", nopol: "B 1357 TUV", customer: "TOKO BANGUNAN", namaSesuaiBPKB: "BAMBANG W", jenisPengurusan: "Mutasi LD", jenisBayar: "Transfer", tglUangMasuk: "08/11/2024", uangMasuk: 5300000, bank: "Mandiri", uangKeluar: 3700000, tglUangKeluar: "09/11/2024", uangKeluarDari: "Kas Kantor", profit: 1600000, status: "Proses", noInvoice: "INV-LD-007", tglInvoice: "07/11/2024", tandaTerima: "-", bpkb: "Belum", statusBPKB: "Proses", ttbBPKB: "-" },
-  { id: 8, tglMasuk: "08/11/2024", r4r2: "R2", nopol: "D 9753 WXY", customer: "FOTOCOPY 24 JAM", namaSesuaiBPKB: "DEDI SURYADI", jenisPengurusan: "Mutasi LD", jenisBayar: "Transfer", tglUangMasuk: "09/11/2024", uangMasuk: 4850000, bank: "BRI", uangKeluar: 3350000, tglUangKeluar: "10/11/2024", uangKeluarDari: "Kas Kantor", profit: 1500000, status: "Selesai", noInvoice: "INV-LD-008", tglInvoice: "08/11/2024", tandaTerima: "TT-008", bpkb: "Ada", statusBPKB: "Selesai", ttbBPKB: "TTB-008" },
-  { id: 9, tglMasuk: "09/11/2024", r4r2: "R4", nopol: "F 8642 ZAB", customer: "LAUNDRY KILOAN", namaSesuaiBPKB: "WATI LESTARI", jenisPengurusan: "Mutasi LD", jenisBayar: "Cash", tglUangMasuk: "10/11/2024", uangMasuk: 4750000, bank: "Cash", uangKeluar: 3250000, tglUangKeluar: "11/11/2024", uangKeluarDari: "Kas Kantor", profit: 1500000, status: "Selesai", noInvoice: "INV-LD-009", tglInvoice: "09/11/2024", tandaTerima: "TT-009", bpkb: "Ada", statusBPKB: "Selesai", ttbBPKB: "TTB-009" },
-  { id: 10, tglMasuk: "10/11/2024", r4r2: "R2", nopol: "B 7531 CDE", customer: "RUMAH MAKAN PADANG", namaSesuaiBPKB: "YUSUF HAKIM", jenisPengurusan: "Mutasi LD", jenisBayar: "Transfer", tglUangMasuk: "11/11/2024", uangMasuk: 5050000, bank: "BCA", uangKeluar: 3500000, tglUangKeluar: "12/11/2024", uangKeluarDari: "Kas Kantor", profit: 1550000, status: "Selesai", noInvoice: "INV-LD-010", tglInvoice: "10/11/2024", tandaTerima: "TT-010", bpkb: "Ada", statusBPKB: "Selesai", ttbBPKB: "TTB-010" },
-];
-
-const mutasiASData = [
-  { id: 1, tglMasuk: "01/11/2024", r4r2: "R2", nopol: "D 1111 ASA", customer: "TOKO BAJU", namaSesuaiBPKB: "SANTI DEWI", jenisPengurusan: "Mutasi AS", jenisBayar: "Transfer", tglUangMasuk: "02/11/2024", uangMasuk: 4800000, bank: "Mandiri", uangKeluar: 3200000, tglUangKeluar: "03/11/2024", uangKeluarDari: "Kas Kantor", profit: 1600000, status: "Selesai", noInvoice: "INV-AS-001", tglInvoice: "01/11/2024", tandaTerima: "TT-AS-001", bpkb: "Ada", statusBPKB: "Selesai", ttbBPKB: "TTB-AS-001" },
-  { id: 2, tglMasuk: "02/11/2024", r4r2: "R4", nopol: "F 2222 ASB", customer: "RESTORAN PADANG", namaSesuaiBPKB: "YUSUF HAKIM", jenisPengurusan: "Mutasi AS", jenisBayar: "Cash", tglUangMasuk: "03/11/2024", uangMasuk: 4600000, bank: "Cash", uangKeluar: 3100000, tglUangKeluar: "04/11/2024", uangKeluarDari: "Kas Kantor", profit: 1500000, status: "Selesai", noInvoice: "INV-AS-002", tglInvoice: "02/11/2024", tandaTerima: "TT-AS-002", bpkb: "Ada", statusBPKB: "Selesai", ttbBPKB: "TTB-AS-002" },
-  { id: 3, tglMasuk: "03/11/2024", r4r2: "R2", nopol: "B 3333 ASC", customer: "MINIMARKET", namaSesuaiBPKB: "RINA OKTAVIA", jenisPengurusan: "Mutasi AS", jenisBayar: "Transfer", tglUangMasuk: "04/11/2024", uangMasuk: 4900000, bank: "BRI", uangKeluar: 3300000, tglUangKeluar: "05/11/2024", uangKeluarDari: "Kas Kantor", profit: 1600000, status: "Proses", noInvoice: "INV-AS-003", tglInvoice: "03/11/2024", tandaTerima: "-", bpkb: "Belum", statusBPKB: "Proses", ttbBPKB: "-" },
-  { id: 4, tglMasuk: "04/11/2024", r4r2: "R4", nopol: "D 4444 ASD", customer: "COUNTER HP", namaSesuaiBPKB: "IWAN SETIAWAN", jenisPengurusan: "Mutasi AS", jenisBayar: "Transfer", tglUangMasuk: "05/11/2024", uangMasuk: 4700000, bank: "BCA", uangKeluar: 3150000, tglUangKeluar: "06/11/2024", uangKeluarDari: "Kas Kantor", profit: 1550000, status: "Selesai", noInvoice: "INV-AS-004", tglInvoice: "04/11/2024", tandaTerima: "TT-AS-004", bpkb: "Ada", statusBPKB: "Selesai", ttbBPKB: "TTB-AS-004" },
-  { id: 5, tglMasuk: "05/11/2024", r4r2: "R2", nopol: "F 5555 ASE", customer: "APOTEK SEHAT", namaSesuaiBPKB: "DWI ANGGRAENI", jenisPengurusan: "Mutasi AS", jenisBayar: "Transfer", tglUangMasuk: "06/11/2024", uangMasuk: 4850000, bank: "Mandiri", uangKeluar: 3250000, tglUangKeluar: "07/11/2024", uangKeluarDari: "Kas Kantor", profit: 1600000, status: "Selesai", noInvoice: "INV-AS-005", tglInvoice: "05/11/2024", tandaTerima: "TT-AS-005", bpkb: "Ada", statusBPKB: "Selesai", ttbBPKB: "TTB-AS-005" },
-  { id: 6, tglMasuk: "06/11/2024", r4r2: "R4", nopol: "B 6666 ASF", customer: "PERCETAKAN", namaSesuaiBPKB: "HADI PURNOMO", jenisPengurusan: "Mutasi AS", jenisBayar: "Cash", tglUangMasuk: "07/11/2024", uangMasuk: 4650000, bank: "Cash", uangKeluar: 3100000, tglUangKeluar: "08/11/2024", uangKeluarDari: "Kas Kantor", profit: 1550000, status: "Selesai", noInvoice: "INV-AS-006", tglInvoice: "06/11/2024", tandaTerima: "TT-AS-006", bpkb: "Ada", statusBPKB: "Selesai", ttbBPKB: "TTB-AS-006" },
-  { id: 7, tglMasuk: "07/11/2024", r4r2: "R2", nopol: "D 7777 ASG", customer: "TOKO SEMBAKO", namaSesuaiBPKB: "NURUL HIDAYAH", jenisPengurusan: "Mutasi AS", jenisBayar: "Transfer", tglUangMasuk: "08/11/2024", uangMasuk: 4800000, bank: "BRI", uangKeluar: 3200000, tglUangKeluar: "09/11/2024", uangKeluarDari: "Kas Kantor", profit: 1600000, status: "Proses", noInvoice: "INV-AS-007", tglInvoice: "07/11/2024", tandaTerima: "-", bpkb: "Belum", statusBPKB: "Proses", ttbBPKB: "-" },
-  { id: 8, tglMasuk: "08/11/2024", r4r2: "R4", nopol: "F 8888 ASH", customer: "WARUNG KOPI", namaSesuaiBPKB: "TRI WAHYUDI", jenisPengurusan: "Mutasi AS", jenisBayar: "Transfer", tglUangMasuk: "09/11/2024", uangMasuk: 4750000, bank: "BCA", uangKeluar: 3200000, tglUangKeluar: "10/11/2024", uangKeluarDari: "Kas Kantor", profit: 1550000, status: "Selesai", noInvoice: "INV-AS-008", tglInvoice: "08/11/2024", tandaTerima: "TT-AS-008", bpkb: "Ada", statusBPKB: "Selesai", ttbBPKB: "TTB-AS-008" },
-  { id: 9, tglMasuk: "09/11/2024", r4r2: "R2", nopol: "B 9999 ASI", customer: "BENGKEL LAS", namaSesuaiBPKB: "SUMANTO", jenisPengurusan: "Mutasi AS", jenisBayar: "Cash", tglUangMasuk: "10/11/2024", uangMasuk: 4600000, bank: "Cash", uangKeluar: 3050000, tglUangKeluar: "11/11/2024", uangKeluarDari: "Kas Kantor", profit: 1550000, status: "Selesai", noInvoice: "INV-AS-009", tglInvoice: "09/11/2024", tandaTerima: "TT-AS-009", bpkb: "Ada", statusBPKB: "Selesai", ttbBPKB: "TTB-AS-009" },
-  { id: 10, tglMasuk: "10/11/2024", r4r2: "R4", nopol: "D 1010 ASJ", customer: "LAUNDRY KILOAN", namaSesuaiBPKB: "ANI SUSILOWATI", jenisPengurusan: "Mutasi AS", jenisBayar: "Transfer", tglUangMasuk: "11/11/2024", uangMasuk: 4900000, bank: "Mandiri", uangKeluar: 3300000, tglUangKeluar: "12/11/2024", uangKeluarDari: "Kas Kantor", profit: 1600000, status: "Selesai", noInvoice: "INV-AS-010", tglInvoice: "10/11/2024", tandaTerima: "TT-AS-010", bpkb: "Ada", statusBPKB: "Selesai", ttbBPKB: "TTB-AS-010" },
-];
-
-const bbnData = [
-  { id: 1, tglMasuk: "01/11/2024", r4r2: "R4", nopol: "F 1111 BBN", customer: "SITI RAHAYU", namaSesuaiBPKB: "SITI RAHAYU", jenisPengurusan: "BBN 1", jenisBayar: "Transfer", tglUangMasuk: "02/11/2024", uangMasuk: 6000000, bank: "BRI", uangKeluar: 4200000, tglUangKeluar: "03/11/2024", uangKeluarDari: "Kas Kantor", profit: 1800000, status: "Selesai", noInvoice: "INV-BBN-001", tglInvoice: "01/11/2024", tandaTerima: "TT-BBN-001", bpkb: "Ada", statusBPKB: "Selesai", ttbBPKB: "TTB-BBN-001" },
-  { id: 2, tglMasuk: "02/11/2024", r4r2: "R2", nopol: "B 2222 BBN", customer: "LINDA PERMATA", namaSesuaiBPKB: "LINDA PERMATA", jenisPengurusan: "BBN 1", jenisBayar: "Cash", tglUangMasuk: "03/11/2024", uangMasuk: 5800000, bank: "Cash", uangKeluar: 4000000, tglUangKeluar: "04/11/2024", uangKeluarDari: "Kas Kantor", profit: 1800000, status: "Selesai", noInvoice: "INV-BBN-002", tglInvoice: "02/11/2024", tandaTerima: "TT-BBN-002", bpkb: "Ada", statusBPKB: "Selesai", ttbBPKB: "TTB-BBN-002" },
-  { id: 3, tglMasuk: "03/11/2024", r4r2: "R4", nopol: "D 3333 BBN", customer: "HENDRA WIJAYA", namaSesuaiBPKB: "HENDRA WIJAYA", jenisPengurusan: "BBN 2", jenisBayar: "Transfer", tglUangMasuk: "04/11/2024", uangMasuk: 5500000, bank: "BCA", uangKeluar: 3800000, tglUangKeluar: "05/11/2024", uangKeluarDari: "Kas Kantor", profit: 1700000, status: "Proses", noInvoice: "INV-BBN-003", tglInvoice: "03/11/2024", tandaTerima: "-", bpkb: "Belum", statusBPKB: "Proses", ttbBPKB: "-" },
-  { id: 4, tglMasuk: "04/11/2024", r4r2: "R2", nopol: "F 4444 BBN", customer: "PUTRI AMANDA", namaSesuaiBPKB: "PUTRI AMANDA", jenisPengurusan: "BBN 1", jenisBayar: "Transfer", tglUangMasuk: "05/11/2024", uangMasuk: 6100000, bank: "Mandiri", uangKeluar: 4250000, tglUangKeluar: "06/11/2024", uangKeluarDari: "Kas Kantor", profit: 1850000, status: "Selesai", noInvoice: "INV-BBN-004", tglInvoice: "04/11/2024", tandaTerima: "TT-BBN-004", bpkb: "Ada", statusBPKB: "Selesai", ttbBPKB: "TTB-BBN-004" },
-  { id: 5, tglMasuk: "05/11/2024", r4r2: "R4", nopol: "B 5555 BBN", customer: "RUDI HARTONO", namaSesuaiBPKB: "RUDI HARTONO", jenisPengurusan: "BBN 2", jenisBayar: "Transfer", tglUangMasuk: "06/11/2024", uangMasuk: 5700000, bank: "BRI", uangKeluar: 3900000, tglUangKeluar: "07/11/2024", uangKeluarDari: "Kas Kantor", profit: 1800000, status: "Selesai", noInvoice: "INV-BBN-005", tglInvoice: "05/11/2024", tandaTerima: "TT-BBN-005", bpkb: "Ada", statusBPKB: "Selesai", ttbBPKB: "TTB-BBN-005" },
-  { id: 6, tglMasuk: "06/11/2024", r4r2: "R2", nopol: "D 6666 BBN", customer: "MAYA SARI", namaSesuaiBPKB: "MAYA SARI", jenisPengurusan: "BBN 1", jenisBayar: "Cash", tglUangMasuk: "07/11/2024", uangMasuk: 5950000, bank: "Cash", uangKeluar: 4150000, tglUangKeluar: "08/11/2024", uangKeluarDari: "Kas Kantor", profit: 1800000, status: "Selesai", noInvoice: "INV-BBN-006", tglInvoice: "06/11/2024", tandaTerima: "TT-BBN-006", bpkb: "Ada", statusBPKB: "Selesai", ttbBPKB: "TTB-BBN-006" },
-  { id: 7, tglMasuk: "07/11/2024", r4r2: "R4", nopol: "F 7777 BBN", customer: "TONO SUSANTO", namaSesuaiBPKB: "TONO SUSANTO", jenisPengurusan: "BBN 2", jenisBayar: "Transfer", tglUangMasuk: "08/11/2024", uangMasuk: 5600000, bank: "BCA", uangKeluar: 3850000, tglUangKeluar: "09/11/2024", uangKeluarDari: "Kas Kantor", profit: 1750000, status: "Proses", noInvoice: "INV-BBN-007", tglInvoice: "07/11/2024", tandaTerima: "-", bpkb: "Belum", statusBPKB: "Proses", ttbBPKB: "-" },
-  { id: 8, tglMasuk: "08/11/2024", r4r2: "R2", nopol: "B 8888 BBN", customer: "CITRA DEWI", namaSesuaiBPKB: "CITRA DEWI", jenisPengurusan: "BBN 1", jenisBayar: "Transfer", tglUangMasuk: "09/11/2024", uangMasuk: 6050000, bank: "Mandiri", uangKeluar: 4200000, tglUangKeluar: "10/11/2024", uangKeluarDari: "Kas Kantor", profit: 1850000, status: "Selesai", noInvoice: "INV-BBN-008", tglInvoice: "08/11/2024", tandaTerima: "TT-BBN-008", bpkb: "Ada", statusBPKB: "Selesai", ttbBPKB: "TTB-BBN-008" },
-  { id: 9, tglMasuk: "09/11/2024", r4r2: "R4", nopol: "D 9999 BBN", customer: "ANDI WIJAYA", namaSesuaiBPKB: "ANDI WIJAYA", jenisPengurusan: "BBN 2", jenisBayar: "Cash", tglUangMasuk: "10/11/2024", uangMasuk: 5650000, bank: "Cash", uangKeluar: 3900000, tglUangKeluar: "11/11/2024", uangKeluarDari: "Kas Kantor", profit: 1750000, status: "Selesai", noInvoice: "INV-BBN-009", tglInvoice: "09/11/2024", tandaTerima: "TT-BBN-009", bpkb: "Ada", statusBPKB: "Selesai", ttbBPKB: "TTB-BBN-009" },
-  { id: 10, tglMasuk: "10/11/2024", r4r2: "R2", nopol: "F 1010 BBN", customer: "DEWI LESTARI", namaSesuaiBPKB: "DEWI LESTARI", jenisPengurusan: "BBN 1", jenisBayar: "Transfer", tglUangMasuk: "11/11/2024", uangMasuk: 6000000, bank: "BRI", uangKeluar: 4200000, tglUangKeluar: "12/11/2024", uangKeluarDari: "Kas Kantor", profit: 1800000, status: "Selesai", noInvoice: "INV-BBN-010", tglInvoice: "10/11/2024", tandaTerima: "TT-BBN-010", bpkb: "Ada", statusBPKB: "Selesai", ttbBPKB: "TTB-BBN-010" },
-];
-
-const perpanjanganPajakData = [
-  { id: 1, tglMasuk: "01/11/2024", r4r2: "R2", nopol: "B 1111 PJK", customer: "AHMAD RIZKI", namaSesuaiBPKB: "AHMAD RIZKI", jenisPengurusan: "Pajak Tahunan", jenisBayar: "Transfer", tglUangMasuk: "02/11/2024", uangMasuk: 1500000, bank: "BCA", uangKeluar: 800000, tglUangKeluar: "03/11/2024", uangKeluarDari: "Kas Messenger", profit: 700000, status: "Selesai", noInvoice: "INV-PJK-001", tglInvoice: "01/11/2024", tandaTerima: "TT-PJK-001" },
-  { id: 2, tglMasuk: "02/11/2024", r4r2: "R4", nopol: "D 2222 PJK", customer: "RUDI HARTONO", namaSesuaiBPKB: "RUDI HARTONO", jenisPengurusan: "Pajak Tahunan", jenisBayar: "Cash", tglUangMasuk: "03/11/2024", uangMasuk: 1200000, bank: "Cash", uangKeluar: 600000, tglUangKeluar: "04/11/2024", uangKeluarDari: "Kas Messenger", profit: 600000, status: "Selesai", noInvoice: "INV-PJK-002", tglInvoice: "02/11/2024", tandaTerima: "TT-PJK-002" },
-  { id: 3, tglMasuk: "03/11/2024", r4r2: "R2", nopol: "F 3333 PJK", customer: "MAYA SARI", namaSesuaiBPKB: "MAYA SARI", jenisPengurusan: "Pajak 5 Tahunan", jenisBayar: "Transfer", tglUangMasuk: "04/11/2024", uangMasuk: 2500000, bank: "Mandiri", uangKeluar: 1800000, tglUangKeluar: "05/11/2024", uangKeluarDari: "Kas Messenger", profit: 700000, status: "Proses", noInvoice: "INV-PJK-003", tglInvoice: "03/11/2024", tandaTerima: "-" },
-  { id: 4, tglMasuk: "04/11/2024", r4r2: "R4", nopol: "B 4444 PJK", customer: "LINDA PERMATA", namaSesuaiBPKB: "LINDA PERMATA", jenisPengurusan: "Perpanjangan STNK", jenisBayar: "Transfer", tglUangMasuk: "05/11/2024", uangMasuk: 1400000, bank: "BRI", uangKeluar: 750000, tglUangKeluar: "06/11/2024", uangKeluarDari: "Kas Messenger", profit: 650000, status: "Selesai", noInvoice: "INV-PJK-004", tglInvoice: "04/11/2024", tandaTerima: "TT-PJK-004" },
-  { id: 5, tglMasuk: "05/11/2024", r4r2: "R2", nopol: "D 5555 PJK", customer: "HENDRA WIJAYA", namaSesuaiBPKB: "HENDRA WIJAYA", jenisPengurusan: "Pajak 5 Tahunan", jenisBayar: "Transfer", tglUangMasuk: "06/11/2024", uangMasuk: 2800000, bank: "BCA", uangKeluar: 2000000, tglUangKeluar: "07/11/2024", uangKeluarDari: "Kas Messenger", profit: 800000, status: "Selesai", noInvoice: "INV-PJK-005", tglInvoice: "05/11/2024", tandaTerima: "TT-PJK-005" },
-  { id: 6, tglMasuk: "06/11/2024", r4r2: "R4", nopol: "F 6666 PJK", customer: "PUTRI AMANDA", namaSesuaiBPKB: "PUTRI AMANDA", jenisPengurusan: "Pajak Tahunan", jenisBayar: "Cash", tglUangMasuk: "07/11/2024", uangMasuk: 1350000, bank: "Cash", uangKeluar: 680000, tglUangKeluar: "08/11/2024", uangKeluarDari: "Kas Messenger", profit: 670000, status: "Selesai", noInvoice: "INV-PJK-006", tglInvoice: "06/11/2024", tandaTerima: "TT-PJK-006" },
-  { id: 7, tglMasuk: "07/11/2024", r4r2: "R2", nopol: "B 7777 PJK", customer: "TONO SUSANTO", namaSesuaiBPKB: "TONO SUSANTO", jenisPengurusan: "Perpanjangan STNK", jenisBayar: "Transfer", tglUangMasuk: "08/11/2024", uangMasuk: 1450000, bank: "Mandiri", uangKeluar: 780000, tglUangKeluar: "09/11/2024", uangKeluarDari: "Kas Messenger", profit: 670000, status: "Proses", noInvoice: "INV-PJK-007", tglInvoice: "07/11/2024", tandaTerima: "-" },
-  { id: 8, tglMasuk: "08/11/2024", r4r2: "R4", nopol: "D 8888 PJK", customer: "CITRA DEWI", namaSesuaiBPKB: "CITRA DEWI", jenisPengurusan: "Pajak 5 Tahunan", jenisBayar: "Transfer", tglUangMasuk: "09/11/2024", uangMasuk: 2600000, bank: "BRI", uangKeluar: 1850000, tglUangKeluar: "10/11/2024", uangKeluarDari: "Kas Messenger", profit: 750000, status: "Selesai", noInvoice: "INV-PJK-008", tglInvoice: "08/11/2024", tandaTerima: "TT-PJK-008" },
-  { id: 9, tglMasuk: "09/11/2024", r4r2: "R2", nopol: "F 9999 PJK", customer: "ANDI WIJAYA", namaSesuaiBPKB: "ANDI WIJAYA", jenisPengurusan: "Pajak Tahunan", jenisBayar: "Cash", tglUangMasuk: "10/11/2024", uangMasuk: 1300000, bank: "Cash", uangKeluar: 650000, tglUangKeluar: "11/11/2024", uangKeluarDari: "Kas Messenger", profit: 650000, status: "Selesai", noInvoice: "INV-PJK-009", tglInvoice: "09/11/2024", tandaTerima: "TT-PJK-009" },
-  { id: 10, tglMasuk: "10/11/2024", r4r2: "R4", nopol: "B 1010 PJK", customer: "DEWI LESTARI", namaSesuaiBPKB: "DEWI LESTARI", jenisPengurusan: "Perpanjangan STNK", jenisBayar: "Transfer", tglUangMasuk: "11/11/2024", uangMasuk: 1500000, bank: "BCA", uangKeluar: 800000, tglUangKeluar: "12/11/2024", uangKeluarDari: "Kas Messenger", profit: 700000, status: "Selesai", noInvoice: "INV-PJK-010", tglInvoice: "10/11/2024", tandaTerima: "TT-PJK-010" },
-];
-
-const lainnyaData = [
-  { id: 1, tglMasuk: "01/11/2024", r4r2: "R4", nopol: "D 1111 LLL", customer: "DEWI LESTARI", namaSesuaiBPKB: "DEWI LESTARI", jenisPengurusan: "Duplikat STNK", jenisBayar: "Cash", tglUangMasuk: "02/11/2024", uangMasuk: 800000, bank: "Cash", uangKeluar: 500000, tglUangKeluar: "03/11/2024", uangKeluarDari: "Kas Messenger", profit: 300000, status: "Selesai", noInvoice: "INV-LLL-001", tglInvoice: "01/11/2024", tandaTerima: "TT-LLL-001" },
-  { id: 2, tglMasuk: "02/11/2024", r4r2: "R2", nopol: "F 2222 LLL", customer: "TONO SUSANTO", namaSesuaiBPKB: "TONO SUSANTO", jenisPengurusan: "Ganti Plat", jenisBayar: "Transfer", tglUangMasuk: "03/11/2024", uangMasuk: 900000, bank: "Mandiri", uangKeluar: 550000, tglUangKeluar: "04/11/2024", uangKeluarDari: "Kas Messenger", profit: 350000, status: "Selesai", noInvoice: "INV-LLL-002", tglInvoice: "02/11/2024", tandaTerima: "TT-LLL-002" },
-  { id: 3, tglMasuk: "03/11/2024", r4r2: "R4", nopol: "B 3333 LLL", customer: "LINDA PERMATA", namaSesuaiBPKB: "LINDA PERMATA", jenisPengurusan: "Duplikat BPKB", jenisBayar: "Transfer", tglUangMasuk: "04/11/2024", uangMasuk: 1200000, bank: "BCA", uangKeluar: 850000, tglUangKeluar: "05/11/2024", uangKeluarDari: "Kas Messenger", profit: 350000, status: "Proses", noInvoice: "INV-LLL-003", tglInvoice: "03/11/2024", tandaTerima: "-" },
-  { id: 4, tglMasuk: "04/11/2024", r4r2: "R2", nopol: "D 4444 LLL", customer: "HENDRA WIJAYA", namaSesuaiBPKB: "HENDRA WIJAYA", jenisPengurusan: "Ganti Plat", jenisBayar: "Cash", tglUangMasuk: "05/11/2024", uangMasuk: 950000, bank: "Cash", uangKeluar: 600000, tglUangKeluar: "06/11/2024", uangKeluarDari: "Kas Messenger", profit: 350000, status: "Selesai", noInvoice: "INV-LLL-004", tglInvoice: "04/11/2024", tandaTerima: "TT-LLL-004" },
-  { id: 5, tglMasuk: "05/11/2024", r4r2: "R4", nopol: "F 5555 LLL", customer: "PUTRI AMANDA", namaSesuaiBPKB: "PUTRI AMANDA", jenisPengurusan: "Duplikat STNK", jenisBayar: "Transfer", tglUangMasuk: "06/11/2024", uangMasuk: 850000, bank: "BRI", uangKeluar: 520000, tglUangKeluar: "07/11/2024", uangKeluarDari: "Kas Messenger", profit: 330000, status: "Selesai", noInvoice: "INV-LLL-005", tglInvoice: "05/11/2024", tandaTerima: "TT-LLL-005" },
-  { id: 6, tglMasuk: "06/11/2024", r4r2: "R2", nopol: "B 6666 LLL", customer: "RUDI HARTONO", namaSesuaiBPKB: "RUDI HARTONO", jenisPengurusan: "Ganti Nama STNK", jenisBayar: "Transfer", tglUangMasuk: "07/11/2024", uangMasuk: 1000000, bank: "Mandiri", uangKeluar: 650000, tglUangKeluar: "08/11/2024", uangKeluarDari: "Kas Messenger", profit: 350000, status: "Selesai", noInvoice: "INV-LLL-006", tglInvoice: "06/11/2024", tandaTerima: "TT-LLL-006" },
-  { id: 7, tglMasuk: "07/11/2024", r4r2: "R4", nopol: "D 7777 LLL", customer: "MAYA SARI", namaSesuaiBPKB: "MAYA SARI", jenisPengurusan: "Ganti Plat", jenisBayar: "Cash", tglUangMasuk: "08/11/2024", uangMasuk: 920000, bank: "Cash", uangKeluar: 580000, tglUangKeluar: "09/11/2024", uangKeluarDari: "Kas Messenger", profit: 340000, status: "Proses", noInvoice: "INV-LLL-007", tglInvoice: "07/11/2024", tandaTerima: "-" },
-  { id: 8, tglMasuk: "08/11/2024", r4r2: "R2", nopol: "F 8888 LLL", customer: "TONO SUSANTO", namaSesuaiBPKB: "TONO SUSANTO", jenisPengurusan: "Duplikat STNK", jenisBayar: "Transfer", tglUangMasuk: "09/11/2024", uangMasuk: 880000, bank: "BCA", uangKeluar: 540000, tglUangKeluar: "10/11/2024", uangKeluarDari: "Kas Messenger", profit: 340000, status: "Selesai", noInvoice: "INV-LLL-008", tglInvoice: "08/11/2024", tandaTerima: "TT-LLL-008" },
-  { id: 9, tglMasuk: "09/11/2024", r4r2: "R4", nopol: "B 9999 LLL", customer: "CITRA DEWI", namaSesuaiBPKB: "CITRA DEWI", jenisPengurusan: "Ganti Plat Hilang", jenisBayar: "Transfer", tglUangMasuk: "10/11/2024", uangMasuk: 1100000, bank: "BRI", uangKeluar: 750000, tglUangKeluar: "11/11/2024", uangKeluarDari: "Kas Messenger", profit: 350000, status: "Selesai", noInvoice: "INV-LLL-009", tglInvoice: "09/11/2024", tandaTerima: "TT-LLL-009" },
-  { id: 10, tglMasuk: "10/11/2024", r4r2: "R2", nopol: "D 1010 LLL", customer: "ANDI WIJAYA", namaSesuaiBPKB: "ANDI WIJAYA", jenisPengurusan: "Duplikat STNK", jenisBayar: "Cash", tglUangMasuk: "11/11/2024", uangMasuk: 820000, bank: "Cash", uangKeluar: 500000, tglUangKeluar: "12/11/2024", uangKeluarDari: "Kas Messenger", profit: 320000, status: "Selesai", noInvoice: "INV-LLL-010", tglInvoice: "10/11/2024", tandaTerima: "TT-LLL-010" },
-];
+} from "../data/financeDummyData";
 
 export function DataPenjualan() {
-  const [searchTerm, setSearchTerm] = useState("");
+  const [activeTab, setActiveTab] = useState("mutasi-ld");
+  const [isAdding, setIsAdding] = useState(false);
+  const [viewingItem, setViewingItem] = useState<{
+    item: any;
+    subTabTitle: string;
+    columns?: Column[];
+  } | null>(null);
 
-  const handleExport = (format: 'csv' | 'pdf', tabName: string) => {
-    toast.success(`Export ${format.toUpperCase()} untuk ${tabName} berhasil!`);
+  // Data states
+  const [mutasiLD, setMutasiLD] = useState(initialMutasiLDData);
+  const [mutasiAS, setMutasiAS] = useState(initialMutasiASData);
+  const [bbn, setBBN] = useState(initialBBNData);
+  const [perpanjangan, setPerpanjangan] = useState(initialPerpanjanganData);
+  const [lainnya, setLainnya] = useState(initialLainnyaData);
+  const [belumBayar, setBelumBayar] = useState(initialBelumBayarData);
+  const [profitPending, setProfitPending] = useState(initialProfitPendingData);
+  const [cashbackPending, setCashbackPending] = useState(initialCashbackPendingData);
+
+  // Common fields configuration for Penjualan
+  const penjualanFields: FieldConfig[] = [
+    { key: "tglMasuk", label: "Tanggal masuk", type: "date" },
+    { key: "r4r2", label: "Roda (R4/R2)", type: "select", options: ["R4", "R2"] },
+    { key: "nopol", label: "Plat nomor", type: "text", placeholder: "Contoh: B 1234 ABC" },
+    { key: "customer", label: "Customer", type: "text" },
+    { key: "namaSesuaiBPKB", label: "Nama sesuai BPKB/STNK", type: "text" },
+    { key: "jenisPengurusan", label: "Jenis pengurusan", type: "text" },
+    { key: "jenisBayar", label: "Metode pembayaran", type: "select", options: ["Transfer", "Cash", "Tempo"] },
+    { key: "uangMasuk", label: "Uang masuk", type: "number" },
+    { key: "bank", label: "Bank", type: "select", options: ["BCA", "Mandiri", "BRI", "BNI", "Cash"] },
+    { key: "uangKeluar", label: "Uang keluar", type: "number" },
+    { key: "uangKeluarDari", label: "Sumber uang keluar", type: "select", options: ["Kas Kantor", "Kas Messenger", "Bank"] },
+    { key: "profit", label: "Profit", type: "number" },
+    { key: "status", label: "Status berkas", type: "select", options: ["Proses", "Selesai", "Pending"] },
+    { key: "noInvoice", label: "Nomor invoice", type: "text" },
+    { key: "bpkb", label: "Kelengkapan BPKB", type: "select", options: ["Ada", "Belum"] },
+    { key: "statusBPKB", label: "Status BPKB", type: "select", options: ["Selesai", "Proses"] },
+    { key: "ttbBPKB", label: "Nomor TTB BPKB", type: "text" },
+  ];
+
+  // Standard columns for Penjualan tables
+  const penjualanColumns: Column[] = [
+    { key: "tglMasuk", label: "Tanggal masuk", filterable: true, filterType: "text" },
+    { key: "r4r2", label: "Roda", filterable: true, filterType: "select", filterOptions: ["R4", "R2"] },
+    { key: "nopol", label: "Plat nomor", filterable: true, filterType: "text" },
+    { key: "customer", label: "Customer", filterable: true, filterType: "text" },
+    { key: "namaSesuaiBPKB", label: "Nama BPKB/STNK" },
+    { key: "jenisPengurusan", label: "Jenis pengurusan" },
+    { key: "jenisBayar", label: "Bayar", filterable: true, filterType: "select", filterOptions: ["Transfer", "Cash", "Tempo"] },
+    { key: "uangMasuk", label: "Uang masuk" },
+    { key: "bank", label: "Bank" },
+    { key: "uangKeluar", label: "Uang keluar" },
+    { key: "profit", label: "Profit" },
+    { key: "status", label: "Status", filterable: true, filterType: "select", filterOptions: ["Selesai", "Proses", "Pending"] },
+    { key: "noInvoice", label: "Invoice" },
+    { key: "statusBPKB", label: "Status BPKB" },
+    { key: "ttbBPKB", label: "TTB BPKB" },
+  ];
+
+  const perpanjanganColumns: Column[] = [
+    { key: "tglMasuk", label: "Tanggal masuk", filterable: true, filterType: "text" },
+    { key: "r4r2", label: "Roda", filterable: true, filterType: "select", filterOptions: ["R4", "R2"] },
+    { key: "nopol", label: "Plat nomor", filterable: true, filterType: "text" },
+    { key: "customer", label: "Customer", filterable: true, filterType: "text" },
+    { key: "namaSesuaiBPKB", label: "Nama BPKB/STNK" },
+    { key: "jenisPengurusan", label: "Jenis pengurusan" },
+    { key: "jenisBayar", label: "Bayar" },
+    { key: "uangMasuk", label: "Uang masuk" },
+    { key: "bank", label: "Bank" },
+    { key: "uangKeluar", label: "Uang keluar" },
+    { key: "profit", label: "Profit" },
+    { key: "status", label: "Status" },
+    { key: "noInvoice", label: "Invoice" },
+    { key: "tandaTerima", label: "TTB" },
+  ];
+
+  const lainnyaColumns: Column[] = [
+    { key: "tglMasuk", label: "Tanggal masuk", filterable: true, filterType: "text" },
+    { key: "r4r2", label: "Roda", filterable: true, filterType: "select", filterOptions: ["R4", "R2"] },
+    { key: "nopol", label: "Plat nomor", filterable: true, filterType: "text" },
+    { key: "customer", label: "Customer", filterable: true, filterType: "text" },
+    { key: "namaSesuaiBPKB", label: "Nama BPKB/STNK" },
+    { key: "jenisPengurusan", label: "Jenis pengurusan" },
+    { key: "jenisBayar", label: "Bayar" },
+    { key: "uangMasuk", label: "Uang masuk" },
+    { key: "bank", label: "Bank" },
+    { key: "uangKeluar", label: "Uang keluar" },
+    { key: "profit", label: "Profit" },
+    { key: "status", label: "Status" },
+    { key: "noInvoice", label: "Invoice" },
+    { key: "tandaTerima", label: "TTB" },
+  ];
+
+  const belumBayarColumns: Column[] = [
+    { key: "tanggal", label: "Tanggal", filterable: true, filterType: "text" },
+    { key: "customer", label: "Customer", filterable: true, filterType: "text" },
+    { key: "nopol", label: "Plat nomor", filterable: true, filterType: "text" },
+    { key: "pengurusan", label: "Pengurusan" },
+    { key: "uangMasuk", label: "Uang masuk" },
+    { key: "biayaSamsat", label: "Biaya samsat" },
+    { key: "kekurangan", label: "Kekurangan" },
+    { key: "status", label: "Status", filterable: true, filterType: "select", filterOptions: ["Belum Bayar", "Kurang Bayar"] },
+    { key: "invoice", label: "Invoice" },
+  ];
+
+  const profitPendingColumns: Column[] = [
+    { key: "tanggal", label: "Tanggal", filterable: true, filterType: "text" },
+    { key: "customer", label: "Customer", filterable: true, filterType: "text" },
+    { key: "nopol", label: "Plat nomor", filterable: true, filterType: "text" },
+    { key: "pengurusan", label: "Pengurusan" },
+    { key: "uangMasuk", label: "Uang masuk" },
+    { key: "biayaSamsat", label: "Biaya samsat" },
+    { key: "profit", label: "Profit" },
+    { key: "status", label: "Status" },
+    { key: "alasan", label: "Alasan pending" },
+    { key: "invoice", label: "Invoice" },
+  ];
+
+  const cashbackPendingColumns: Column[] = [
+    { key: "tanggal", label: "Tanggal", filterable: true, filterType: "text" },
+    { key: "customer", label: "Customer", filterable: true, filterType: "text" },
+    { key: "nopol", label: "Plat nomor", filterable: true, filterType: "text" },
+    { key: "pengurusan", label: "Pengurusan" },
+    { key: "uangMasuk", label: "Uang masuk" },
+    { key: "profit", label: "Profit" },
+    { key: "jumlahCashback", label: "Jumlah cashback" },
+    { key: "cashbackPersen", label: "%" },
+    { key: "status", label: "Status" },
+    { key: "invoice", label: "Invoice" },
+  ];
+
+  const handleAddSubmit = (rows: any[]) => {
+    const formatNumeric = (row: any) => ({
+      ...row,
+      uangMasuk: parseInt(row.uangMasuk) || 0,
+      uangKeluar: parseInt(row.uangKeluar) || 0,
+      profit: parseInt(row.profit) || 0,
+    });
+
+    if (activeTab === "mutasi-ld") {
+      const nextId = Math.max(0, ...mutasiLD.map(d => d.id)) + 1;
+      const newItems = rows.map((r, i) => ({ id: nextId + i, ...formatNumeric(r) }));
+      setMutasiLD([...mutasiLD, ...newItems]);
+    } else if (activeTab === "mutasi-as") {
+      const nextId = Math.max(0, ...mutasiAS.map(d => d.id)) + 1;
+      const newItems = rows.map((r, i) => ({ id: nextId + i, ...formatNumeric(r) }));
+      setMutasiAS([...mutasiAS, ...newItems]);
+    } else if (activeTab === "bbn") {
+      const nextId = Math.max(0, ...bbn.map(d => d.id)) + 1;
+      const newItems = rows.map((r, i) => ({ id: nextId + i, ...formatNumeric(r) }));
+      setBBN([...bbn, ...newItems]);
+    } else if (activeTab === "perpanjangan") {
+      const nextId = Math.max(0, ...perpanjangan.map(d => d.id)) + 1;
+      const newItems = rows.map((r, i) => ({ id: nextId + i, ...formatNumeric(r) }));
+      setPerpanjangan([...perpanjangan, ...newItems]);
+    } else if (activeTab === "lainnya") {
+      const nextId = Math.max(0, ...lainnya.map(d => d.id)) + 1;
+      const newItems = rows.map((r, i) => ({ id: nextId + i, ...formatNumeric(r) }));
+      setLainnya([...lainnya, ...newItems]);
+    }
+
+    setIsAdding(false);
+    toast.success(`${rows.length} data transaksi berhasil disimpan`);
   };
 
-  const handleAdd = (tabName: string) => {
-    toast.info(`Form tambah data ${tabName} akan dibuka`);
-  };
+  if (viewingItem) {
+    return (
+      <FinanceDetailPage
+        subTabTitle={viewingItem.subTabTitle}
+        item={viewingItem.item}
+        columns={viewingItem.columns}
+        onBack={() => setViewingItem(null)}
+      />
+    );
+  }
 
-  const handleEdit = (item: any, tabName: string) => {
-    toast.info(`Edit data ${tabName}: ${item.customer}`);
-  };
+  if (isAdding) {
+    const getTabTitle = () => {
+      switch (activeTab) {
+        case "mutasi-ld": return "Mutasi luar daerah (LD)";
+        case "mutasi-as": return "Mutasi antar samsat (AS)";
+        case "bbn": return "Bea balik nama (BBN)";
+        case "perpanjangan": return "Perpanjangan pajak";
+        default: return "Lain-lain";
+      }
+    };
 
-  const handleDelete = (item: any, tabName: string) => {
-    toast.error(`Data ${tabName} dihapus: ${item.customer}`);
-  };
-
-  const handleView = (item: any, tabName: string) => {
-    toast.info(`View detail ${tabName}: ${item.noInvoice}`);
-  };
+    return (
+      <FinanceAddPage
+        title={`Tambah data penjualan ${getTabTitle().toLowerCase()}`}
+        description={`Masukkan satu atau lebih data transaksi untuk kategori ${getTabTitle().toLowerCase()}`}
+        fields={penjualanFields}
+        onBack={() => setIsAdding(false)}
+        onSubmit={handleAddSubmit}
+      />
+    );
+  }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input 
-            placeholder="Cari berdasarkan nopol, customer, atau invoice..." 
-            className="pl-10 bg-input-background border-border"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
-      </div>
-
-      <Tabs defaultValue="mutasi-ld" className="space-y-6">
+    <div className="space-y-5">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-5">
         <ScrollArea className="w-full">
-          <TabsList className="glass-card p-1 inline-flex w-max min-w-full gap-1">
-            <TabsTrigger value="mutasi-ld" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-xs sm:text-sm whitespace-nowrap">
-              <FileText className="w-4 h-4 mr-1 flex-shrink-0" />
+          <TabsList className="bg-muted/40 p-1 inline-flex w-max min-w-full gap-1 border border-border rounded-lg">
+            <TabsTrigger 
+              value="mutasi-ld" 
+              className="text-xs sm:text-sm data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-xs transition-all whitespace-nowrap"
+            >
+              <FileText className="w-3.5 h-3.5 mr-1.5" />
               Mutasi LD
             </TabsTrigger>
-            <TabsTrigger value="mutasi-as" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-xs sm:text-sm whitespace-nowrap">
-              <FileText className="w-4 h-4 mr-1 flex-shrink-0" />
+            <TabsTrigger 
+              value="mutasi-as" 
+              className="text-xs sm:text-sm data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-xs transition-all whitespace-nowrap"
+            >
+              <FileText className="w-3.5 h-3.5 mr-1.5" />
               Mutasi AS
             </TabsTrigger>
-            <TabsTrigger value="bbn" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-xs sm:text-sm whitespace-nowrap">
-              <FileText className="w-4 h-4 mr-1 flex-shrink-0" />
+            <TabsTrigger 
+              value="bbn" 
+              className="text-xs sm:text-sm data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-xs transition-all whitespace-nowrap"
+            >
+              <FileText className="w-3.5 h-3.5 mr-1.5" />
               BBN
             </TabsTrigger>
-            <TabsTrigger value="perpanjangan" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-xs sm:text-sm whitespace-nowrap">
-              <FileText className="w-4 h-4 mr-1 flex-shrink-0" />
+            <TabsTrigger 
+              value="perpanjangan" 
+              className="text-xs sm:text-sm data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-xs transition-all whitespace-nowrap"
+            >
+              <FileText className="w-3.5 h-3.5 mr-1.5" />
               Perpanjangan
             </TabsTrigger>
-            <TabsTrigger value="lainnya" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-xs sm:text-sm whitespace-nowrap">
-              <FileText className="w-4 h-4 mr-1 flex-shrink-0" />
+            <TabsTrigger 
+              value="lainnya" 
+              className="text-xs sm:text-sm data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-xs transition-all whitespace-nowrap"
+            >
+              <FileText className="w-3.5 h-3.5 mr-1.5" />
               Lain-lain
             </TabsTrigger>
-            <TabsTrigger value="belum-kurang-bayar" className="data-[state=active]:bg-amber-500 data-[state=active]:text-white text-xs sm:text-sm whitespace-nowrap">
-              <FileText className="w-4 h-4 mr-1 flex-shrink-0" />
-              Belum & Kurang Bayar
+            <TabsTrigger 
+              value="belum-kurang-bayar" 
+              className="text-xs sm:text-sm data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-xs transition-all whitespace-nowrap"
+            >
+              <FileText className="w-3.5 h-3.5 mr-1.5" />
+              Belum & kurang bayar
             </TabsTrigger>
-            <TabsTrigger value="profit-pending" className="data-[state=active]:bg-purple-500 data-[state=active]:text-white text-xs sm:text-sm whitespace-nowrap">
-              <FileText className="w-4 h-4 mr-1 flex-shrink-0" />
-              Profit Terpending
+            <TabsTrigger 
+              value="profit-pending" 
+              className="text-xs sm:text-sm data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-xs transition-all whitespace-nowrap"
+            >
+              <FileText className="w-3.5 h-3.5 mr-1.5" />
+              Profit terpending
             </TabsTrigger>
-            <TabsTrigger value="cashback-pending" className="data-[state=active]:bg-cyan-500 data-[state=active]:text-white text-xs sm:text-sm whitespace-nowrap">
-              <FileText className="w-4 h-4 mr-1 flex-shrink-0" />
-              Cashback Terpending
+            <TabsTrigger 
+              value="cashback-pending" 
+              className="text-xs sm:text-sm data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-xs transition-all whitespace-nowrap"
+            >
+              <FileText className="w-3.5 h-3.5 mr-1.5" />
+              Cashback terpending
             </TabsTrigger>
           </TabsList>
         </ScrollArea>
 
+        {/* Mutasi LD */}
         <TabsContent value="mutasi-ld">
-          <Card className="glass-card p-6">
-            <h3 className="text-lg mb-4">Tabel Mutasi LD</h3>
-            <EnhancedTable
-              columns={[
-                { key: "tglMasuk", label: "Tgl Masuk" },
-                { key: "r4r2", label: "R4/R2" },
-                { key: "nopol", label: "Plat No" },
-                { key: "customer", label: "Customer" },
-                { key: "namaSesuaiBPKB", label: "Nama BPKB/STNK" },
-                { key: "jenisPengurusan", label: "Jenis" },
-                { key: "jenisBayar", label: "Bayar" },
-                { key: "tglUangMasuk", label: "Tgl Masuk" },
-                { key: "uangMasuk", label: "Uang Masuk" },
-                { key: "bank", label: "Bank" },
-                { key: "uangKeluar", label: "Uang Keluar" },
-                { key: "tglUangKeluar", label: "Tgl Keluar" },
-                { key: "uangKeluarDari", label: "Dari" },
-                { key: "profit", label: "Profit" },
-                { key: "status", label: "Status" },
-                { key: "noInvoice", label: "Invoice" },
-                { key: "bpkb", label: "BPKB" },
-                { key: "statusBPKB", label: "Status BPKB" },
-                { key: "ttbBPKB", label: "TTB BPKB" },
-              ]}
-              data={mutasiLDData}
-              onAdd={() => handleAdd("Mutasi LD")}
-              onEdit={(item) => handleEdit(item, "Mutasi LD")}
-              onDelete={(item) => handleDelete(item, "Mutasi LD")}
-              onView={(item) => handleView(item, "Mutasi LD")}
-              onExport={(format) => handleExport(format, "Mutasi LD")}
-              searchPlaceholder="Cari data Mutasi LD..."
+          <Card className="p-4 sm:p-5 border border-border bg-card shadow-xs">
+            <div className="mb-4">
+              <h3 className="text-base font-semibold text-foreground">Data mutasi luar daerah</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">Daftar transaksi pengurusan mutasi keluar dan masuk antar daerah</p>
+            </div>
+            <EnhancedTableWithDialogs
+              columns={penjualanColumns}
+              data={mutasiLD}
+              onView={(item) => setViewingItem({ item, subTabTitle: "Data Penjualan - Mutasi LD", columns: penjualanColumns })}
+              onAdd={() => setIsAdding(true)}
+              onEdit={(item, updated) => {
+                setMutasiLD(mutasiLD.map(d => d.id === item.id ? { ...d, ...updated } : d));
+              }}
+              onDelete={(item) => {
+                setMutasiLD(mutasiLD.filter(d => d.id !== item.id));
+              }}
+              searchPlaceholder="Cari data mutasi luar daerah..."
+              editFields={penjualanFields}
             />
           </Card>
         </TabsContent>
 
+        {/* Mutasi AS */}
         <TabsContent value="mutasi-as">
-          <Card className="glass-card p-6">
-            <h3 className="text-lg mb-4">Tabel Mutasi AS</h3>
-            <EnhancedTable
-              columns={[
-                { key: "tglMasuk", label: "Tgl Masuk" },
-                { key: "r4r2", label: "R4/R2" },
-                { key: "nopol", label: "Plat No" },
-                { key: "customer", label: "Customer" },
-                { key: "namaSesuaiBPKB", label: "Nama BPKB/STNK" },
-                { key: "jenisPengurusan", label: "Jenis" },
-                { key: "jenisBayar", label: "Bayar" },
-                { key: "tglUangMasuk", label: "Tgl Masuk" },
-                { key: "uangMasuk", label: "Uang Masuk" },
-                { key: "bank", label: "Bank" },
-                { key: "uangKeluar", label: "Uang Keluar" },
-                { key: "tglUangKeluar", label: "Tgl Keluar" },
-                { key: "uangKeluarDari", label: "Dari" },
-                { key: "profit", label: "Profit" },
-                { key: "status", label: "Status" },
-                { key: "noInvoice", label: "Invoice" },
-                { key: "bpkb", label: "BPKB" },
-                { key: "statusBPKB", label: "Status BPKB" },
-                { key: "ttbBPKB", label: "TTB BPKB" },
-              ]}
-              data={mutasiASData}
-              onAdd={() => handleAdd("Mutasi AS")}
-              onEdit={(item) => handleEdit(item, "Mutasi AS")}
-              onDelete={(item) => handleDelete(item, "Mutasi AS")}
-              onView={(item) => handleView(item, "Mutasi AS")}
-              onExport={(format) => handleExport(format, "Mutasi AS")}
-              searchPlaceholder="Cari data Mutasi AS..."
+          <Card className="p-4 sm:p-5 border border-border bg-card shadow-xs">
+            <div className="mb-4">
+              <h3 className="text-base font-semibold text-foreground">Data mutasi antar samsat</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">Daftar berkas perpindahan administrasi antar kantor samsat</p>
+            </div>
+            <EnhancedTableWithDialogs
+              columns={penjualanColumns}
+              data={mutasiAS}
+              onView={(item) => setViewingItem({ item, subTabTitle: "Data Penjualan - Mutasi AS", columns: penjualanColumns })}
+              onAdd={() => setIsAdding(true)}
+              onEdit={(item, updated) => {
+                setMutasiAS(mutasiAS.map(d => d.id === item.id ? { ...d, ...updated } : d));
+              }}
+              onDelete={(item) => {
+                setMutasiAS(mutasiAS.filter(d => d.id !== item.id));
+              }}
+              searchPlaceholder="Cari data mutasi antar samsat..."
+              editFields={penjualanFields}
             />
           </Card>
         </TabsContent>
 
+        {/* BBN */}
         <TabsContent value="bbn">
-          <Card className="glass-card p-6">
-            <h3 className="text-lg mb-4">Tabel BBN</h3>
-            <EnhancedTable
-              columns={[
-                { key: "tglMasuk", label: "Tgl Masuk" },
-                { key: "r4r2", label: "R4/R2" },
-                { key: "nopol", label: "Plat No" },
-                { key: "customer", label: "Customer" },
-                { key: "namaSesuaiBPKB", label: "Nama BPKB/STNK" },
-                { key: "jenisPengurusan", label: "Jenis" },
-                { key: "jenisBayar", label: "Bayar" },
-                { key: "tglUangMasuk", label: "Tgl Masuk" },
-                { key: "uangMasuk", label: "Uang Masuk" },
-                { key: "bank", label: "Bank" },
-                { key: "uangKeluar", label: "Uang Keluar" },
-                { key: "tglUangKeluar", label: "Tgl Keluar" },
-                { key: "uangKeluarDari", label: "Dari" },
-                { key: "profit", label: "Profit" },
-                { key: "status", label: "Status" },
-                { key: "noInvoice", label: "Invoice" },
-                { key: "bpkb", label: "BPKB" },
-                { key: "statusBPKB", label: "Status BPKB" },
-                { key: "ttbBPKB", label: "TTB BPKB" },
-              ]}
-              data={bbnData}
-              onAdd={() => handleAdd("BBN")}
-              onEdit={(item) => handleEdit(item, "BBN")}
-              onDelete={(item) => handleDelete(item, "BBN")}
-              onView={(item) => handleView(item, "BBN")}
-              onExport={(format) => handleExport(format, "BBN")}
-              searchPlaceholder="Cari data BBN..."
+          <Card className="p-4 sm:p-5 border border-border bg-card shadow-xs">
+            <div className="mb-4">
+              <h3 className="text-base font-semibold text-foreground">Data bea balik nama (BBN)</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">Daftar proses pengurusan balik nama kendaraan bermotor (BBN 1 & BBN 2)</p>
+            </div>
+            <EnhancedTableWithDialogs
+              columns={penjualanColumns}
+              data={bbn}
+              onView={(item) => setViewingItem({ item, subTabTitle: "Data Penjualan - BBN", columns: penjualanColumns })}
+              onAdd={() => setIsAdding(true)}
+              onEdit={(item, updated) => {
+                setBBN(bbn.map(d => d.id === item.id ? { ...d, ...updated } : d));
+              }}
+              onDelete={(item) => {
+                setBBN(bbn.filter(d => d.id !== item.id));
+              }}
+              searchPlaceholder="Cari data balik nama..."
+              editFields={penjualanFields}
             />
           </Card>
         </TabsContent>
 
+        {/* Perpanjangan */}
         <TabsContent value="perpanjangan">
-          <Card className="glass-card p-6">
-            <h3 className="text-lg mb-4">Tabel Perpanjangan Pajak</h3>
-            <EnhancedTable
-              columns={[
-                { key: "tglMasuk", label: "Tgl Masuk" },
-                { key: "r4r2", label: "R4/R2" },
-                { key: "nopol", label: "Plat No" },
-                { key: "customer", label: "Customer" },
-                { key: "namaSesuaiBPKB", label: "Nama BPKB/STNK" },
-                { key: "jenisPengurusan", label: "Jenis" },
-                { key: "jenisBayar", label: "Bayar" },
-                { key: "tglUangMasuk", label: "Tgl Masuk" },
-                { key: "uangMasuk", label: "Uang Masuk" },
-                { key: "bank", label: "Bank" },
-                { key: "uangKeluar", label: "Uang Keluar" },
-                { key: "tglUangKeluar", label: "Tgl Keluar" },
-                { key: "uangKeluarDari", label: "Dari" },
-                { key: "profit", label: "Profit" },
-                { key: "status", label: "Status" },
-                { key: "noInvoice", label: "Invoice" },
-                { key: "tandaTerima", label: "TTB" },
-              ]}
-              data={perpanjanganPajakData}
-              onAdd={() => handleAdd("Perpanjangan Pajak")}
-              onEdit={(item) => handleEdit(item, "Perpanjangan Pajak")}
-              onDelete={(item) => handleDelete(item, "Perpanjangan Pajak")}
-              onView={(item) => handleView(item, "Perpanjangan Pajak")}
-              onExport={(format) => handleExport(format, "Perpanjangan Pajak")}
-              searchPlaceholder="Cari data Perpanjangan..."
+          <Card className="p-4 sm:p-5 border border-border bg-card shadow-xs">
+            <div className="mb-4">
+              <h3 className="text-base font-semibold text-foreground">Data perpanjangan pajak</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">Daftar berkas pembayaran pajak tahunan dan 5 tahunan STNK</p>
+            </div>
+            <EnhancedTableWithDialogs
+              columns={perpanjanganColumns}
+              data={perpanjangan}
+              onView={(item) => setViewingItem({ item, subTabTitle: "Data Penjualan - Perpanjangan", columns: perpanjanganColumns })}
+              onAdd={() => setIsAdding(true)}
+              onEdit={(item, updated) => {
+                setPerpanjangan(perpanjangan.map(d => d.id === item.id ? { ...d, ...updated } : d));
+              }}
+              onDelete={(item) => {
+                setPerpanjangan(perpanjangan.filter(d => d.id !== item.id));
+              }}
+              searchPlaceholder="Cari data perpanjangan..."
+              editFields={penjualanFields}
             />
           </Card>
         </TabsContent>
 
+        {/* Lain-lain */}
         <TabsContent value="lainnya">
-          <Card className="glass-card p-6">
-            <h3 className="text-lg mb-4">Tabel Lain-lain</h3>
-            <EnhancedTable
-              columns={[
-                { key: "tglMasuk", label: "Tgl Masuk" },
-                { key: "r4r2", label: "R4/R2" },
-                { key: "nopol", label: "Plat No" },
-                { key: "customer", label: "Customer" },
-                { key: "namaSesuaiBPKB", label: "Nama BPKB/STNK" },
-                { key: "jenisPengurusan", label: "Jenis" },
-                { key: "jenisBayar", label: "Bayar" },
-                { key: "tglUangMasuk", label: "Tgl Masuk" },
-                { key: "uangMasuk", label: "Uang Masuk" },
-                { key: "bank", label: "Bank" },
-                { key: "uangKeluar", label: "Uang Keluar" },
-                { key: "tglUangKeluar", label: "Tgl Keluar" },
-                { key: "uangKeluarDari", label: "Dari" },
-                { key: "profit", label: "Profit" },
-                { key: "status", label: "Status" },
-                { key: "noInvoice", label: "Invoice" },
-                { key: "tandaTerima", label: "TTB" },
-              ]}
-              data={lainnyaData}
-              onAdd={() => handleAdd("Lain-lain")}
-              onEdit={(item) => handleEdit(item, "Lain-lain")}
-              onDelete={(item) => handleDelete(item, "Lain-lain")}
-              onView={(item) => handleView(item, "Lain-lain")}
-              onExport={(format) => handleExport(format, "Lain-lain")}
-              searchPlaceholder="Cari data lain-lain..."
+          <Card className="p-4 sm:p-5 border border-border bg-card shadow-xs">
+            <div className="mb-4">
+              <h3 className="text-base font-semibold text-foreground">Data layanan lainnya</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">Pengurusan duplikat STNK, plat nomor hilang, ganti plat, dan administrasi lainnya</p>
+            </div>
+            <EnhancedTableWithDialogs
+              columns={lainnyaColumns}
+              data={lainnya}
+              onView={(item) => setViewingItem({ item, subTabTitle: "Data Penjualan - Lain-lain", columns: lainnyaColumns })}
+              onAdd={() => setIsAdding(true)}
+              onEdit={(item, updated) => {
+                setLainnya(lainnya.map(d => d.id === item.id ? { ...d, ...updated } : d));
+              }}
+              onDelete={(item) => {
+                setLainnya(lainnya.filter(d => d.id !== item.id));
+              }}
+              searchPlaceholder="Cari data layanan lainnya..."
+              editFields={penjualanFields}
             />
           </Card>
         </TabsContent>
 
+        {/* Belum & Kurang Bayar */}
         <TabsContent value="belum-kurang-bayar">
-          <Card className="glass-card p-6">
-            <h3 className="text-lg mb-4">Tabel Belum & Kurang Bayar</h3>
-            <EnhancedTable
-              columns={[
-                { key: "tanggal", label: "Tanggal" },
-                { key: "customer", label: "Customer" },
-                { key: "nopol", label: "Nopol" },
-                { key: "pengurusan", label: "Pengurusan" },
-                { key: "totalTagihan", label: "Total Tagihan" },
-                { key: "terbayar", label: "Terbayar" },
-                { key: "kurangBayar", label: "Kurang Bayar" },
-                { key: "status", label: "Status" },
-                { key: "invoice", label: "Invoice" },
-              ]}
-              data={initialBelumBayarData}
-              onAdd={() => handleAdd("Belum & Kurang Bayar")}
-              onEdit={(item) => handleEdit(item, "Belum & Kurang Bayar")}
-              onDelete={(item) => handleDelete(item, "Belum & Kurang Bayar")}
-              onView={(item) => handleView(item, "Belum & Kurang Bayar")}
-              onExport={(format) => handleExport(format, "Belum & Kurang Bayar")}
+          <Card className="p-4 sm:p-5 border border-border bg-card shadow-xs">
+            <div className="mb-4">
+              <h3 className="text-base font-semibold text-foreground">Data belum & kurang bayar</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">Monitoring transaksi customer yang masih memiliki kekurangan pembayaran</p>
+            </div>
+            <EnhancedTableWithDialogs
+              columns={belumBayarColumns}
+              data={belumBayar}
+              onView={(item) => setViewingItem({ item, subTabTitle: "Data Penjualan - Belum & Kurang Bayar", columns: belumBayarColumns })}
+              onEdit={(item, updated) => {
+                setBelumBayar(belumBayar.map(d => d.id === item.id ? { ...d, ...updated } : d));
+              }}
+              onDelete={(item) => {
+                setBelumBayar(belumBayar.filter(d => d.id !== item.id));
+              }}
               searchPlaceholder="Cari data belum & kurang bayar..."
+              hideAddButton={true}
             />
           </Card>
         </TabsContent>
 
+        {/* Profit Terpending */}
         <TabsContent value="profit-pending">
-          <Card className="glass-card p-6">
-            <h3 className="text-lg mb-4">Tabel Profit Terpending</h3>
-            <EnhancedTable
-              columns={[
-                { key: "tanggal", label: "Tanggal" },
-                { key: "customer", label: "Customer" },
-                { key: "nopol", label: "Nopol" },
-                { key: "pengurusan", label: "Pengurusan" },
-                { key: "uangMasuk", label: "Uang Masuk" },
-                { key: "biayaSamsat", label: "Biaya Samsat" },
-                { key: "profit", label: "Profit" },
-                { key: "statusProfit", label: "Status Profit" },
-                { key: "alasanPending", label: "Alasan Pending" },
-                { key: "invoice", label: "Invoice" },
-              ]}
-              data={initialProfitPendingData}
-              onAdd={() => handleAdd("Profit Terpending")}
-              onEdit={(item) => handleEdit(item, "Profit Terpending")}
-              onDelete={(item) => handleDelete(item, "Profit Terpending")}
-              onView={(item) => handleView(item, "Profit Terpending")}
-              onExport={(format) => handleExport(format, "Profit Terpending")}
+          <Card className="p-4 sm:p-5 border border-border bg-card shadow-xs">
+            <div className="mb-4">
+              <h3 className="text-base font-semibold text-foreground">Data profit terpending</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">Transaksi dengan margin profit yang masih tertahan verifikasi atau administrasi</p>
+            </div>
+            <EnhancedTableWithDialogs
+              columns={profitPendingColumns}
+              data={profitPending}
+              onView={(item) => setViewingItem({ item, subTabTitle: "Data Penjualan - Profit Terpending", columns: profitPendingColumns })}
+              onEdit={(item, updated) => {
+                setProfitPending(profitPending.map(d => d.id === item.id ? { ...d, ...updated } : d));
+              }}
+              onDelete={(item) => {
+                setProfitPending(profitPending.filter(d => d.id !== item.id));
+              }}
               searchPlaceholder="Cari data profit terpending..."
+              hideAddButton={true}
             />
           </Card>
         </TabsContent>
 
+        {/* Cashback Terpending */}
         <TabsContent value="cashback-pending">
-          <Card className="glass-card p-6">
-            <h3 className="text-lg mb-4">Tabel Cashback Terpending</h3>
-            <EnhancedTable
-              columns={[
-                { key: "tanggal", label: "Tanggal" },
-                { key: "customer", label: "Customer" },
-                { key: "nopol", label: "Nopol" },
-                { key: "pengurusan", label: "Pengurusan" },
-                { key: "uangMasuk", label: "Uang Masuk" },
-                { key: "profit", label: "Profit" },
-                { key: "cashbackPersen", label: "Cashback %" },
-                { key: "jumlahCashback", label: "Jumlah Cashback" },
-                { key: "statusCashback", label: "Status Cashback" },
-                { key: "invoice", label: "Invoice" },
-              ]}
-              data={initialCashbackPendingData}
-              onAdd={() => handleAdd("Cashback Terpending")}
-              onEdit={(item) => handleEdit(item, "Cashback Terpending")}
-              onDelete={(item) => handleDelete(item, "Cashback Terpending")}
-              onView={(item) => handleView(item, "Cashback Terpending")}
-              onExport={(format) => handleExport(format, "Cashback Terpending")}
+          <Card className="p-4 sm:p-5 border border-border bg-card shadow-xs">
+            <div className="mb-4">
+              <h3 className="text-base font-semibold text-foreground">Data cashback terpending</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">Daftar alokasi cashback rekanan atau customer yang menunggu pencairan</p>
+            </div>
+            <EnhancedTableWithDialogs
+              columns={cashbackPendingColumns}
+              data={cashbackPending}
+              onView={(item) => setViewingItem({ item, subTabTitle: "Data Penjualan - Cashback Terpending", columns: cashbackPendingColumns })}
+              onEdit={(item, updated) => {
+                setCashbackPending(cashbackPending.map(d => d.id === item.id ? { ...d, ...updated } : d));
+              }}
+              onDelete={(item) => {
+                setCashbackPending(cashbackPending.filter(d => d.id !== item.id));
+              }}
               searchPlaceholder="Cari data cashback terpending..."
+              hideAddButton={true}
             />
           </Card>
         </TabsContent>

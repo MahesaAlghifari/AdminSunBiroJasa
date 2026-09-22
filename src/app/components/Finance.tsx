@@ -3,22 +3,8 @@ import { FinanceContent } from "./FinanceContent";
 
 export function Finance({ defaultTab = "profit" }: { defaultTab?: string }) {
   return (
-    <div className="space-y-4 p-4 md:p-5">
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
-        <h1 className="text-lg md:text-xl bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">Finance</h1>
-        <p className="text-xs md:text-sm text-muted-foreground mt-1 hidden sm:block">Kelola keuangan dan profit bisnis Anda</p>
-      </motion.div>
-
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-      >
-        <FinanceContent tab={defaultTab} />
-      </motion.div>
+    <div className="space-y-6 p-4 md:p-6 max-w-7xl mx-auto">
+      <FinanceContent tab={defaultTab} />
     </div>
   );
 }

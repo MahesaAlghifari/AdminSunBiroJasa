@@ -35,6 +35,7 @@ interface EnhancedTableProps {
   onAdd?: () => void;
   onEdit?: (item: any) => void;
   onDelete?: (item: any) => void;
+  onView?: (item: any) => void;
   onExport?: (format: 'csv' | 'pdf') => void;
   searchPlaceholder?: string;
   itemsPerPageOptions?: number[];

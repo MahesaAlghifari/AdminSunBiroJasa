@@ -1,15 +1,36 @@
+import { useState } from "react";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { 
+  BarChart, 
+  Bar, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  ResponsiveContainer, 
+  Legend 
+} from "recharts";
 import { DataPenjualan } from "./DataPenjualan";
-import { EnhancedTableWithDialogs } from "./EnhancedTableWithDialogs";
-import { FinanceAddDialog } from "./FinanceAddDialog";
+import { EnhancedTableWithDialogs, Column } from "./EnhancedTableWithDialogs";
+import { FinanceAddPage, FieldConfig } from "./FinanceAddPage";
+import { FinanceDetailPage } from "./FinanceDetailPage";
 import { toast } from "sonner";
-import { TrendingUp, TrendingDown, Download } from "lucide-react";
-import { useState } from "react";
+import { 
+  TrendingUp, 
+  TrendingDown, 
+  Download, 
+  Wallet, 
+  ArrowUpRight, 
+  ArrowDownRight, 
+  Receipt,
+  FileCheck,
+  AlertCircle
+} from "lucide-react";
+import { formatRupiah } from "../utils/financeFormatters";
 
-// Import all data from Finance.tsx
+// Import centralized datasets
 import { 
   profitData as initialProfitData, 
   kasMessengerData as initialKasMessengerData, 
@@ -20,7 +41,7 @@ import {
   cashbackTerpendingData as initialCashbackPendingData,
   tagihanData as initialTagihanData,
   labaRugiData
-} from "./Finance";
+} from "../data/financeDummyData";
 
 interface FinanceContentProps {
   tab: string;
@@ -29,8 +50,18 @@ interface FinanceContentProps {
 export function FinanceContent({ tab }: FinanceContentProps) {
   const [filterPeriod, setFilterPeriod] = useState("monthly");
   
-  // State untuk setiap tab
-  const [profitData, setProfitData] = useState(initialProfitData);
+  // State for adding mode (switches from table view to standalone FinanceAddPage)
+  const [isAdding, setIsAdding] = useState(false);
+
+  // State for viewing detail mode (switches from table view to standalone FinanceDetailPage)
+  const [viewingItem, setViewingItem] = useState<{
+    item: any;
+    subTabTitle: string;
+    columns?: { key: string; label: string }[];
+  } | null>(null);
+
+  // Datasets states
+  const [profitData] = useState(initialProfitData);
   const [kasMessengerData, setKasMessengerData] = useState(initialKasMessengerData);
   const [kasKantorData, setKasKantorData] = useState(initialKasKantorData);
   const [pengeluaranData, setPengeluaranData] = useState(initialPengeluaranData);
@@ -38,613 +69,698 @@ export function FinanceContent({ tab }: FinanceContentProps) {
   const [profitPendingData, setProfitPendingData] = useState(initialProfitPendingData);
   const [cashbackPendingData, setCashbackPendingData] = useState(initialCashbackPendingData);
   const [tagihanData, setTagihanData] = useState(initialTagihanData);
-  
-  // Dialog states
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
 
-  // Export PDF untuk Laba Rugi
-  const handleExportLabaRugiPDF = () => {
-    toast.success("Export PDF Laba Rugi berhasil!");
-  };
+  // Sub-tab Header Level 2 renderer with Breadcrumb (Requirement 2 & 3)
+  const renderSubTabHeader = (title: string, description: string) => (
+    <div className="space-y-1.5 pb-3 border-b border-border/70">
+      <nav className="text-xs text-muted-foreground flex items-center gap-1.5" aria-label="Breadcrumb">
+        <span>Finance</span>
+        <span>/</span>
+        <span className="text-foreground font-medium">{title}</span>
+      </nav>
+      <div>
+        <h2 className="text-lg font-semibold tracking-tight text-foreground">{title}</h2>
+        <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">{description}</p>
+      </div>
+    </div>
+  );
 
-  // Profit Tab - VIEW ONLY
+  // If viewing detail, show the detail page (Requirement 18 & 19)
+  if (viewingItem) {
+    return (
+      <FinanceDetailPage
+        subTabTitle={viewingItem.subTabTitle}
+        item={viewingItem.item}
+        columns={viewingItem.columns}
+        onBack={() => setViewingItem(null)}
+      />
+    );
+  }
+
+  // ==========================================
+  // 1. SUB-TAB: PROFIT (VIEW ONLY)
+  // ==========================================
   if (tab === "profit") {
-    return (
-      <Card className="glass-card p-4">
-        <h3 className="text-sm mb-3">Data Profit</h3>
-        <EnhancedTableWithDialogs
-          columns={[
-            { key: "tanggal", label: "Tanggal", filterable: true, filterType: "text" },
-            { key: "nopol", label: "Plat Nopol", filterable: true, filterType: "text" },
-            { key: "customer", label: "Customer", filterable: true, filterType: "text" },
-            { key: "namaBerkas", label: "Nama Berkas" },
-            { key: "pengurusan", label: "Pengurusan", filterable: true, filterType: "select", filterOptions: ["PAJAK TAHUNAN", "PAJAK 5 TAHUNAN", "MUTASI LD", "MUTASI AS", "BALIK NAMA", "BBN 1", "BBN 2"] },
-            { key: "uangMasuk", label: "Uang Masuk" },
-            { key: "biayaSamsat", label: "Biaya Samsat" },
-            { key: "profit", label: "Profit" },
-            { key: "rekening", label: "Rekening", filterable: true, filterType: "select", filterOptions: ["BCA", "Mandiri", "BRI", "BNI", "CIMB", "Cash"] },
-            { key: "invoice", label: "Invoice" },
-            { key: "tanggalTTB", label: "Tanggal TTB" },
-            { key: "ttb", label: "Nomer TTB" },
-          ]}
-          data={profitData}
-          onExport={(format) => {
-            toast.success(`Export ${format.toUpperCase()} Data Profit berhasil!`);
-          }}
-          searchPlaceholder="Cari berdasarkan nopol, customer, invoice..."
-          hideAddButton={true}
-          hideEditButton={true}
-          hideDeleteButton={true}
-        />
-      </Card>
-    );
-  }
+    const totalUangMasuk = profitData.reduce((acc, item) => acc + (item.uangMasuk > 0 ? item.uangMasuk : 0), 0);
+    const totalBiayaSamsat = profitData.reduce((acc, item) => acc + item.biayaSamsat, 0);
+    const totalProfit = profitData.reduce((acc, item) => acc + item.profit, 0);
 
-  // Kas Messenger Tab
-  if (tab === "kas-messenger") {
-    const kasMessengerFields = [
-      { key: "tanggal", label: "Tanggal", type: "date" as const },
-      { key: "jenis", label: "Jenis", type: "select" as const, options: ["Masuk", "Keluar"] },
-      { key: "messenger", label: "Messenger", type: "text" as const },
-      { key: "keterangan", label: "Keterangan", type: "text" as const },
-      { key: "in", label: "Masuk", type: "number" as const },
-      { key: "out", label: "Keluar", type: "number" as const },
-      { key: "total", label: "Total", type: "number" as const },
+    const profitColumns: Column[] = [
+      { key: "tanggal", label: "Tanggal", filterable: true, filterType: "text" },
+      { key: "nopol", label: "Plat nomor", filterable: true, filterType: "text" },
+      { key: "customer", label: "Customer", filterable: true, filterType: "text" },
+      { key: "namaBerkas", label: "Nama berkas" },
+      { 
+        key: "pengurusan", 
+        label: "Pengurusan", 
+        filterable: true, 
+        filterType: "select", 
+        filterOptions: ["PAJAK TAHUNAN", "PAJAK 5 TAHUNAN", "MUTASI LD", "MUTASI AS", "BALIK NAMA", "BBN 1", "BBN 2"] 
+      },
+      { key: "uangMasuk", label: "Uang masuk" },
+      { key: "biayaSamsat", label: "Biaya samsat" },
+      { key: "profit", label: "Profit" },
+      { 
+        key: "rekening", 
+        label: "Rekening", 
+        filterable: true, 
+        filterType: "select", 
+        filterOptions: ["BCA", "Mandiri", "BRI", "BNI", "CIMB", "Cash"] 
+      },
+      { key: "invoice", label: "Nomor invoice" },
+      { key: "tanggalTTB", label: "Tanggal TTB" },
+      { key: "ttb", label: "Nomor TTB" },
     ];
 
     return (
-      <Card className="glass-card p-4">
-        <h3 className="text-sm mb-3">Kas Messenger</h3>
-        <EnhancedTableWithDialogs
-          columns={[
-            { key: "tanggal", label: "Tanggal", filterable: true, filterType: "text" },
-            { key: "jenis", label: "Jenis", filterable: true, filterType: "select", filterOptions: ["Masuk", "Keluar"] },
-            { key: "messenger", label: "Messenger", filterable: true, filterType: "text" },
-            { key: "keterangan", label: "Keterangan" },
-            { 
-              key: "in", 
-              label: "Masuk",
-              render: (value: any) => value > 0 ? (
-                <span className="text-green-400">Rp {value.toLocaleString()}</span>
-              ) : "-"
-            },
-            { 
-              key: "out", 
-              label: "Keluar",
-              render: (value: any) => value > 0 ? (
-                <span className="text-red-400">Rp {value.toLocaleString()}</span>
-              ) : "-"
-            },
-            { key: "total", label: "Total" },
-          ]}
-          data={kasMessengerData}
-          onAdd={() => setIsAddDialogOpen(true)}
-          onEdit={(item, updatedData) => {
-            setKasMessengerData(kasMessengerData.map(d => d.id === item.id ? { ...d, ...updatedData } : d));
-          }}
-          onDelete={(item) => {
-            setKasMessengerData(kasMessengerData.filter(d => d.id !== item.id));
-          }}
-          onExport={(format) => {
-            toast.success(`Export ${format.toUpperCase()} Kas Messenger berhasil!`);
-          }}
-          searchPlaceholder="Cari berdasarkan messenger, jenis..."
-          editFields={kasMessengerFields}
-        />
+      <div className="space-y-6">
+        {renderSubTabHeader("Profit", "Pantau margin keuntungan dan rincian transaksi per berkas")}
 
-        <FinanceAddDialog
-          open={isAddDialogOpen}
-          onOpenChange={setIsAddDialogOpen}
-          title="Tambah Data Kas Messenger"
-          description="Tambahkan satu atau lebih transaksi kas messenger"
-          fields={kasMessengerFields}
-          onSubmit={(rows) => {
-            const newData = rows.map((row, idx) => ({
-              id: Math.max(...kasMessengerData.map(d => d.id)) + idx + 1,
-              ...row,
-              in: parseInt(row.in) || 0,
-              out: parseInt(row.out) || 0,
-              total: parseInt(row.total),
-            }));
-            setKasMessengerData([...kasMessengerData, ...newData]);
-            toast.success(`${newData.length} data kas messenger berhasil ditambahkan!`);
-          }}
-        />
-      </Card>
-    );
-  }
-
-  // Kas Kantor Tab
-  if (tab === "kas-kantor") {
-    const kasKantorFields = [
-      { key: "tanggal", label: "Tanggal", type: "date" as const },
-      { key: "status", label: "Status", type: "select" as const, options: ["Debit", "Kredit"] },
-      { key: "keterangan", label: "Keterangan", type: "text" as const },
-      { key: "debit", label: "Debit", type: "number" as const },
-      { key: "kredit", label: "Kredit", type: "number" as const },
-      { key: "total", label: "Total", type: "number" as const },
-    ];
-
-    return (
-      <Card className="glass-card p-4">
-        <h3 className="text-sm mb-3">Kas Kantor</h3>
-        <EnhancedTableWithDialogs
-          columns={[
-            { key: "tanggal", label: "Tanggal", filterable: true, filterType: "text" },
-            { key: "status", label: "Status", filterable: true, filterType: "select", filterOptions: ["Debit", "Kredit"] },
-            { key: "keterangan", label: "Keterangan", filterable: true, filterType: "text" },
-            { 
-              key: "debit", 
-              label: "Debit",
-              render: (value: any) => value > 0 ? (
-                <span className="text-green-400">Rp {value.toLocaleString()}</span>
-              ) : "-"
-            },
-            { 
-              key: "kredit", 
-              label: "Kredit",
-              render: (value: any) => value > 0 ? (
-                <span className="text-red-400">Rp {value.toLocaleString()}</span>
-              ) : "-"
-            },
-            { key: "total", label: "Total" },
-          ]}
-          data={kasKantorData}
-          onAdd={() => setIsAddDialogOpen(true)}
-          onEdit={(item, updatedData) => {
-            setKasKantorData(kasKantorData.map(d => d.id === item.id ? { ...d, ...updatedData } : d));
-          }}
-          onDelete={(item) => {
-            setKasKantorData(kasKantorData.filter(d => d.id !== item.id));
-          }}
-          onExport={(format) => {
-            toast.success(`Export ${format.toUpperCase()} Kas Kantor berhasil!`);
-          }}
-          searchPlaceholder="Cari berdasarkan keterangan..."
-          editFields={kasKantorFields}
-        />
-
-        <FinanceAddDialog
-          open={isAddDialogOpen}
-          onOpenChange={setIsAddDialogOpen}
-          title="Tambah Data Kas Kantor"
-          description="Tambahkan satu atau lebih transaksi kas kantor"
-          fields={kasKantorFields}
-          onSubmit={(rows) => {
-            const newData = rows.map((row, idx) => ({
-              id: Math.max(...kasKantorData.map(d => d.id)) + idx + 1,
-              ...row,
-              debit: parseInt(row.debit) || 0,
-              kredit: parseInt(row.kredit) || 0,
-              total: parseInt(row.total),
-            }));
-            setKasKantorData([...kasKantorData, ...newData]);
-            toast.success(`${newData.length} data kas kantor berhasil ditambahkan!`);
-          }}
-        />
-      </Card>
-    );
-  }
-
-  // Pengeluaran Tab
-  if (tab === "pengeluaran") {
-    const pengeluaranFields = [
-      { key: "tanggal", label: "Tanggal", type: "date" as const },
-      { key: "keterangan", label: "Keterangan", type: "text" as const },
-      { key: "nominal", label: "Nominal", type: "number" as const },
-    ];
-
-    return (
-      <Card className="glass-card p-4">
-        <h3 className="text-sm mb-3">Pengeluaran Kantor</h3>
-        <EnhancedTableWithDialogs
-          columns={[
-            { key: "tanggal", label: "Tanggal", filterable: true, filterType: "text" },
-            { key: "keterangan", label: "Keterangan", filterable: true, filterType: "text" },
-            { 
-              key: "nominal", 
-              label: "Nominal",
-              render: (value: any) => (
-                <span className="text-red-400">Rp {value.toLocaleString()}</span>
-              )
-            },
-          ]}
-          data={pengeluaranData}
-          onAdd={() => setIsAddDialogOpen(true)}
-          onEdit={(item, updatedData) => {
-            setPengeluaranData(pengeluaranData.map(d => d.id === item.id ? { ...d, ...updatedData } : d));
-          }}
-          onDelete={(item) => {
-            setPengeluaranData(pengeluaranData.filter(d => d.id !== item.id));
-          }}
-          onExport={(format) => {
-            toast.success(`Export ${format.toUpperCase()} Pengeluaran berhasil!`);
-          }}
-          searchPlaceholder="Cari berdasarkan keterangan..."
-          editFields={pengeluaranFields}
-        />
-
-        <FinanceAddDialog
-          open={isAddDialogOpen}
-          onOpenChange={setIsAddDialogOpen}
-          title="Tambah Data Pengeluaran"
-          description="Tambahkan satu atau lebih data pengeluaran"
-          fields={pengeluaranFields}
-          onSubmit={(rows) => {
-            const newData = rows.map((row, idx) => ({
-              id: Math.max(...pengeluaranData.map(d => d.id)) + idx + 1,
-              ...row,
-              nominal: parseInt(row.nominal),
-            }));
-            setPengeluaranData([...pengeluaranData, ...newData]);
-            toast.success(`${newData.length} data pengeluaran berhasil ditambahkan!`);
-          }}
-        />
-        
-        <div className="mt-6 p-4 rounded-lg bg-secondary/30">
-          <div className="flex justify-between items-center">
-            <span>Total Pengeluaran Bulan Ini:</span>
-            <span className="text-2xl text-red-400">
-              Rp {pengeluaranData.reduce((acc, item) => acc + item.nominal, 0).toLocaleString()}
-            </span>
+        {/* Level 3: Table Card */}
+        <Card className="p-4 sm:p-5 border border-border bg-card shadow-xs">
+          <div className="mb-4">
+            <h3 className="text-base font-semibold text-foreground">Daftar transaksi profit</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">Seluruh rekapitulasi data penjualan dan kalkulasi keuntungan samsat</p>
           </div>
+          <EnhancedTableWithDialogs
+            columns={profitColumns}
+            data={profitData}
+            onView={(item) => setViewingItem({ item, subTabTitle: "Profit", columns: profitColumns })}
+            searchPlaceholder="Cari berdasarkan nopol, customer, invoice..."
+            hideAddButton={true}
+            hideEditButton={true}
+            hideDeleteButton={true}
+          />
+        </Card>
+
+        {/* Level 3: Summary Cards (Requirement 4: MOVED BELOW TABLE) */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <Card className="p-4 border border-border bg-card shadow-2xs">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-medium text-muted-foreground">Total uang masuk</p>
+                <h3 className="text-xl font-bold text-foreground mt-1 tabular-nums">
+                  {formatRupiah(totalUangMasuk)}
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">{profitData.length} transaksi tercatat</p>
+              </div>
+              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                <ArrowUpRight className="w-5 h-5" />
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-4 border border-border bg-card shadow-2xs">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-medium text-muted-foreground">Total biaya samsat</p>
+                <h3 className="text-xl font-bold text-foreground mt-1 tabular-nums">
+                  {formatRupiah(totalBiayaSamsat)}
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">Biaya resmi pengurusan</p>
+              </div>
+              <div className="w-10 h-10 rounded-lg bg-rose-500/10 flex items-center justify-center text-rose-500">
+                <ArrowDownRight className="w-5 h-5" />
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-4 border border-border bg-card shadow-2xs">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-medium text-muted-foreground">Total laba kotor (profit)</p>
+                <h3 className="text-xl font-bold text-emerald-600 dark:text-emerald-400 mt-1 tabular-nums">
+                  {formatRupiah(totalProfit)}
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">Margin laba transaksi</p>
+              </div>
+              <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-500">
+                <TrendingUp className="w-5 h-5" />
+              </div>
+            </div>
+          </Card>
         </div>
-      </Card>
-    );
-  }
-
-  // Data Penjualan Tab
-  if (tab === "penjualan") {
-    return <DataPenjualan />;
-  }
-
-  // Belum & Kurang Bayar Tab
-  if (tab === "belum-bayar") {
-    const belumBayarFields = [
-      { key: "tanggal", label: "Tanggal", type: "date" as const },
-      { key: "nopol", label: "Plat Nopol", type: "text" as const },
-      { key: "customer", label: "Customer", type: "text" as const },
-      { key: "namaBerkas", label: "Nama Berkas", type: "text" as const },
-      { key: "pengurusan", label: "Pengurusan", type: "select" as const, options: ["Perpanjangan 1 Tahun", "Perpanjangan 5 Tahun", "Mutasi Antar Samsat", "Mutasi Luar Daerah", "Balik Nama"] },
-      { key: "uangMasuk", label: "Uang Masuk", type: "number" as const },
-      { key: "biayaSamsat", label: "Biaya Samsat", type: "number" as const },
-      { key: "profit", label: "Profit/Rugi", type: "number" as const },
-      { key: "kekurangan", label: "Kekurangan", type: "number" as const },
-      { key: "status", label: "Status", type: "select" as const, options: ["Belum Bayar", "Kurang Bayar"] },
-      { key: "invoice", label: "Invoice", type: "text" as const },
-    ];
-
-    return (
-      <Card className="glass-card p-4">
-        <h3 className="text-sm mb-3">Data Belum & Kurang Bayar</h3>
-        <EnhancedTableWithDialogs
-          columns={[
-            { key: "tanggal", label: "Tanggal", filterable: true, filterType: "text" },
-            { key: "nopol", label: "Plat Nopol", filterable: true, filterType: "text" },
-            { key: "customer", label: "Customer", filterable: true, filterType: "text" },
-            { key: "namaBerkas", label: "Nama Berkas" },
-            { key: "pengurusan", label: "Pengurusan", filterable: true, filterType: "select", filterOptions: ["Perpanjangan 1 Tahun", "Perpanjangan 5 Tahun", "Mutasi Antar Samsat", "Mutasi Luar Daerah", "Balik Nama"] },
-            { key: "uangMasuk", label: "Uang Masuk" },
-            { key: "biayaSamsat", label: "Biaya Samsat" },
-            { key: "profit", label: "Profit/Rugi" },
-            { key: "kekurangan", label: "Kekurangan" },
-            { key: "status", label: "Status", filterable: true, filterType: "select", filterOptions: ["Belum Bayar", "Kurang Bayar"] },
-            { key: "invoice", label: "Invoice" },
-          ]}
-          data={belumBayarData}
-          onAdd={() => setIsAddDialogOpen(true)}
-          onEdit={(item, updatedData) => {
-            setBelumBayarData(belumBayarData.map(d => d.id === item.id ? { ...d, ...updatedData } : d));
-          }}
-          onDelete={(item) => {
-            setBelumBayarData(belumBayarData.filter(d => d.id !== item.id));
-          }}
-          onExport={(format) => {
-            toast.success(`Export ${format.toUpperCase()} Belum & Kurang Bayar berhasil!`);
-          }}
-          searchPlaceholder="Cari berdasarkan customer, nopol..."
-          editFields={belumBayarFields}
-        />
-
-        <FinanceAddDialog
-          open={isAddDialogOpen}
-          onOpenChange={setIsAddDialogOpen}
-          title="Tambah Data Belum & Kurang Bayar"
-          description="Tambahkan satu atau lebih data belum & kurang bayar"
-          fields={belumBayarFields}
-          onSubmit={(rows) => {
-            const newData = rows.map((row, idx) => ({
-              id: Math.max(...belumBayarData.map(d => d.id)) + idx + 1,
-              ...row,
-              uangMasuk: parseInt(row.uangMasuk),
-              biayaSamsat: parseInt(row.biayaSamsat),
-              profit: parseInt(row.profit),
-              kekurangan: parseInt(row.kekurangan),
-            }));
-            setBelumBayarData([...belumBayarData, ...newData]);
-            toast.success(`${newData.length} data berhasil ditambahkan!`);
-          }}
-        />
-      </Card>
-    );
-  }
-
-  // Profit Terpending Tab
-  if (tab === "profit-pending") {
-    const profitPendingFields = [
-      { key: "tanggal", label: "Tanggal", type: "date" as const },
-      { key: "nopol", label: "Plat Nopol", type: "text" as const },
-      { key: "customer", label: "Customer", type: "text" as const },
-      { key: "namaBerkas", label: "Nama Berkas", type: "text" as const },
-      { key: "pengurusan", label: "Pengurusan", type: "select" as const, options: ["Perpanjangan 1 Tahun", "Perpanjangan 5 Tahun", "Mutasi Antar Samsat", "Mutasi Luar Daerah", "Balik Nama"] },
-      { key: "uangMasuk", label: "Uang Masuk", type: "number" as const },
-      { key: "biayaSamsat", label: "Biaya Samsat", type: "number" as const },
-      { key: "profit", label: "Profit", type: "number" as const },
-      { key: "status", label: "Status", type: "select" as const, options: ["Pending"] },
-      { key: "invoice", label: "Invoice", type: "text" as const },
-      { key: "alasan", label: "Alasan Pending", type: "text" as const },
-    ];
-
-    return (
-      <Card className="glass-card p-4">
-        <h3 className="text-sm mb-3">Profit Terpending</h3>
-        <EnhancedTableWithDialogs
-          columns={[
-            { key: "tanggal", label: "Tanggal", filterable: true, filterType: "text" },
-            { key: "nopol", label: "Plat Nopol", filterable: true, filterType: "text" },
-            { key: "customer", label: "Customer", filterable: true, filterType: "text" },
-            { key: "namaBerkas", label: "Nama Berkas" },
-            { key: "pengurusan", label: "Pengurusan", filterable: true, filterType: "select", filterOptions: ["Perpanjangan 1 Tahun", "Perpanjangan 5 Tahun", "Mutasi Antar Samsat", "Mutasi Luar Daerah", "Balik Nama"] },
-            { key: "uangMasuk", label: "Uang Masuk" },
-            { key: "biayaSamsat", label: "Biaya Samsat" },
-            { key: "profit", label: "Profit" },
-            { key: "status", label: "Status" },
-            { key: "invoice", label: "Invoice" },
-            { key: "alasan", label: "Alasan Pending" },
-          ]}
-          data={profitPendingData}
-          onAdd={() => setIsAddDialogOpen(true)}
-          onEdit={(item, updatedData) => {
-            setProfitPendingData(profitPendingData.map(d => d.id === item.id ? { ...d, ...updatedData } : d));
-          }}
-          onDelete={(item) => {
-            setProfitPendingData(profitPendingData.filter(d => d.id !== item.id));
-          }}
-          onExport={(format) => {
-            toast.success(`Export ${format.toUpperCase()} Profit Terpending berhasil!`);
-          }}
-          searchPlaceholder="Cari berdasarkan customer, nopol, alasan..."
-          editFields={profitPendingFields}
-        />
-
-        <FinanceAddDialog
-          open={isAddDialogOpen}
-          onOpenChange={setIsAddDialogOpen}
-          title="Tambah Data Profit Terpending"
-          description="Tambahkan satu atau lebih data profit terpending"
-          fields={profitPendingFields}
-          onSubmit={(rows) => {
-            const newData = rows.map((row, idx) => ({
-              id: Math.max(...profitPendingData.map(d => d.id)) + idx + 1,
-              ...row,
-              uangMasuk: parseInt(row.uangMasuk),
-              biayaSamsat: parseInt(row.biayaSamsat),
-              profit: parseInt(row.profit),
-            }));
-            setProfitPendingData([...profitPendingData, ...newData]);
-            toast.success(`${newData.length} data profit terpending berhasil ditambahkan!`);
-          }}
-        />
-      </Card>
-    );
-  }
-
-  // Cashback Terpending Tab
-  if (tab === "cashback-pending") {
-    const cashbackPendingFields = [
-      { key: "tanggal", label: "Tanggal", type: "date" as const },
-      { key: "nopol", label: "Plat Nopol", type: "text" as const },
-      { key: "customer", label: "Customer", type: "text" as const },
-      { key: "namaBerkas", label: "Nama Berkas", type: "text" as const },
-      { key: "pengurusan", label: "Pengurusan", type: "select" as const, options: ["Perpanjangan 1 Tahun", "Perpanjangan 5 Tahun", "Mutasi Antar Samsat", "Mutasi Luar Daerah", "Balik Nama"] },
-      { key: "uangMasuk", label: "Uang Masuk", type: "number" as const },
-      { key: "profit", label: "Profit", type: "number" as const },
-      { key: "jumlahCashback", label: "Jumlah Cashback", type: "number" as const },
-      { key: "cashbackPersen", label: "%", type: "number" as const },
-      { key: "status", label: "Status", type: "select" as const, options: ["Pending", "Dibayarkan"] },
-      { key: "invoice", label: "Invoice", type: "text" as const },
-    ];
-
-    return (
-      <Card className="glass-card p-4">
-        <h3 className="text-sm mb-3">Cashback Terpending</h3>
-        <EnhancedTableWithDialogs
-          columns={[
-            { key: "tanggal", label: "Tanggal", filterable: true, filterType: "text" },
-            { key: "nopol", label: "Plat Nopol", filterable: true, filterType: "text" },
-            { key: "customer", label: "Customer", filterable: true, filterType: "text" },
-            { key: "namaBerkas", label: "Nama Berkas" },
-            { key: "pengurusan", label: "Pengurusan", filterable: true, filterType: "select", filterOptions: ["Perpanjangan 1 Tahun", "Perpanjangan 5 Tahun", "Mutasi Antar Samsat", "Mutasi Luar Daerah", "Balik Nama"] },
-            { key: "uangMasuk", label: "Uang Masuk" },
-            { key: "profit", label: "Profit" },
-            { key: "jumlahCashback", label: "Jumlah Cashback" },
-            { key: "cashbackPersen", label: "%" },
-            { key: "status", label: "Status", filterable: true, filterType: "select", filterOptions: ["Pending", "Dibayarkan"] },
-            { key: "invoice", label: "Invoice" },
-          ]}
-          data={cashbackPendingData}
-          onAdd={() => setIsAddDialogOpen(true)}
-          onEdit={(item, updatedData) => {
-            setCashbackPendingData(cashbackPendingData.map(d => d.id === item.id ? { ...d, ...updatedData } : d));
-          }}
-          onDelete={(item) => {
-            setCashbackPendingData(cashbackPendingData.filter(d => d.id !== item.id));
-          }}
-          onExport={(format) => {
-            toast.success(`Export ${format.toUpperCase()} Cashback Terpending berhasil!`);
-          }}
-          searchPlaceholder="Cari berdasarkan customer, nopol..."
-          editFields={cashbackPendingFields}
-        />
-
-        <FinanceAddDialog
-          open={isAddDialogOpen}
-          onOpenChange={setIsAddDialogOpen}
-          title="Tambah Data Cashback Terpending"
-          description="Tambahkan satu atau lebih data cashback terpending"
-          fields={cashbackPendingFields}
-          onSubmit={(rows) => {
-            const newData = rows.map((row, idx) => ({
-              id: Math.max(...cashbackPendingData.map(d => d.id)) + idx + 1,
-              ...row,
-              uangMasuk: parseInt(row.uangMasuk),
-              profit: parseInt(row.profit),
-              jumlahCashback: parseInt(row.jumlahCashback),
-              cashbackPersen: parseInt(row.cashbackPersen),
-            }));
-            setCashbackPendingData([...cashbackPendingData, ...newData]);
-            toast.success(`${newData.length} data cashback terpending berhasil ditambahkan!`);
-          }}
-        />
-      </Card>
-    );
-  }
-
-  // Tagihan Tab
-  if (tab === "tagihan") {
-    const tagihanFields = [
-      { key: "tanggal", label: "Tanggal", type: "date" as const },
-      { key: "customer", label: "Customer", type: "text" as const },
-      { key: "nopol", label: "Nopol", type: "text" as const },
-      { key: "jenisLayanan", label: "Jenis Layanan", type: "select" as const, options: ["Perpanjangan 1 Tahun", "Perpanjangan 5 Tahun", "Mutasi Antar Samsat", "Mutasi Luar Daerah", "Balik Nama"] },
-      { key: "totalTagihan", label: "Total Tagihan", type: "number" as const },
-      { key: "terbayar", label: "Terbayar", type: "number" as const },
-      { key: "sisa", label: "Sisa", type: "number" as const },
-      { key: "jatuhTempo", label: "Jatuh Tempo", type: "date" as const },
-      { key: "status", label: "Status", type: "select" as const, options: ["Lunas", "Belum Lunas", "Menunggak"] },
-    ];
-
-    // Pisahkan tagihan lunas dan belum lunas
-    const tagihanLunas = tagihanData.filter(d => d.status === "Lunas");
-    const tagihanBelumLunas = tagihanData.filter(d => d.status !== "Lunas");
-
-    return (
-      <div className="space-y-4">
-        <h3 className="text-sm">Data Tagihan</h3>
-        
-        {/* Tagihan Belum Lunas */}
-        <Card className="glass-card p-4 border-l-4 border-l-red-500">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h4 className="text-lg text-red-400">Tagihan Belum Lunas</h4>
-              <p className="text-sm text-muted-foreground">Total: {tagihanBelumLunas.length} tagihan</p>
-            </div>
-            <Card className="glass-card px-4 py-2 bg-red-500/10 border-red-500/20">
-              <p className="text-xs text-muted-foreground">Total Piutang</p>
-              <p className="text-lg text-red-400">
-                Rp {tagihanBelumLunas.reduce((acc, item) => acc + item.sisa, 0).toLocaleString()}
-              </p>
-            </Card>
-          </div>
-          <EnhancedTableWithDialogs
-            columns={[
-              { key: "tanggal", label: "Tanggal", filterable: true, filterType: "text" },
-              { key: "customer", label: "Customer", filterable: true, filterType: "text" },
-              { key: "nopol", label: "Nopol", filterable: true, filterType: "text" },
-              { key: "jenisLayanan", label: "Jenis Layanan", filterable: true, filterType: "select", filterOptions: ["Perpanjangan 1 Tahun", "Perpanjangan 5 Tahun", "Mutasi Antar Samsat", "Mutasi Luar Daerah", "Balik Nama"] },
-              { key: "totalTagihan", label: "Total Tagihan" },
-              { key: "terbayar", label: "Terbayar" },
-              { key: "sisa", label: "Sisa" },
-              { key: "jatuhTempo", label: "Jatuh Tempo" },
-              { key: "status", label: "Status" },
-            ]}
-            data={tagihanBelumLunas}
-            onAdd={() => setIsAddDialogOpen(true)}
-            onEdit={(item, updatedData) => {
-              setTagihanData(tagihanData.map(d => d.id === item.id ? { ...d, ...updatedData } : d));
-            }}
-            onDelete={(item) => {
-              setTagihanData(tagihanData.filter(d => d.id !== item.id));
-            }}
-            onExport={(format) => {
-              toast.success(`Export ${format.toUpperCase()} Tagihan Belum Lunas berhasil!`);
-            }}
-            searchPlaceholder="Cari customer atau nopol..."
-            editFields={tagihanFields}
-          />
-        </Card>
-
-        {/* Tagihan Lunas */}
-        <Card className="glass-card p-4 border-l-4 border-l-green-500">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h4 className="text-lg text-green-400">Tagihan Lunas</h4>
-              <p className="text-sm text-muted-foreground">Total: {tagihanLunas.length} tagihan</p>
-            </div>
-            <Card className="glass-card px-4 py-2 bg-green-500/10 border-green-500/20">
-              <p className="text-xs text-muted-foreground">Total Terbayar</p>
-              <p className="text-lg text-green-400">
-                Rp {tagihanLunas.reduce((acc, item) => acc + item.totalTagihan, 0).toLocaleString()}
-              </p>
-            </Card>
-          </div>
-          <EnhancedTableWithDialogs
-            columns={[
-              { key: "tanggal", label: "Tanggal", filterable: true, filterType: "text" },
-              { key: "customer", label: "Customer", filterable: true, filterType: "text" },
-              { key: "nopol", label: "Nopol", filterable: true, filterType: "text" },
-              { key: "jenisLayanan", label: "Jenis Layanan", filterable: true, filterType: "select", filterOptions: ["Perpanjangan 1 Tahun", "Perpanjangan 5 Tahun", "Mutasi Antar Samsat", "Mutasi Luar Daerah", "Balik Nama"] },
-              { key: "totalTagihan", label: "Total Tagihan" },
-              { key: "terbayar", label: "Terbayar" },
-              { key: "jatuhTempo", label: "Tanggal Lunas" },
-              { key: "status", label: "Status" },
-            ]}
-            data={tagihanLunas}
-            onEdit={(item, updatedData) => {
-              setTagihanData(tagihanData.map(d => d.id === item.id ? { ...d, ...updatedData } : d));
-            }}
-            onDelete={(item) => {
-              setTagihanData(tagihanData.filter(d => d.id !== item.id));
-            }}
-            onExport={(format) => {
-              toast.success(`Export ${format.toUpperCase()} Tagihan Lunas berhasil!`);
-            }}
-            searchPlaceholder="Cari customer atau nopol..."
-            editFields={tagihanFields}
-          />
-        </Card>
-
-        <FinanceAddDialog
-          open={isAddDialogOpen}
-          onOpenChange={setIsAddDialogOpen}
-          title="Tambah Data Tagihan"
-          description="Tambahkan satu atau lebih data tagihan"
-          fields={tagihanFields}
-          onSubmit={(rows) => {
-            const newData = rows.map((row, idx) => ({
-              id: Math.max(...tagihanData.map(d => d.id)) + idx + 1,
-              ...row,
-              totalTagihan: parseInt(row.totalTagihan),
-              terbayar: parseInt(row.terbayar),
-              sisa: parseInt(row.sisa),
-            }));
-            setTagihanData([...tagihanData, ...newData]);
-            toast.success(`${newData.length} data tagihan berhasil ditambahkan!`);
-          }}
-        />
       </div>
     );
   }
 
-  // Laba Rugi Tab
+  // ==========================================
+  // 2. SUB-TAB: KAS MESSENGER
+  // ==========================================
+  if (tab === "kas-messenger") {
+    const kasMessengerFields: FieldConfig[] = [
+      { key: "tanggal", label: "Tanggal", type: "date" },
+      { key: "jenis", label: "Jenis transaksi", type: "select", options: ["PETTY CASH", "OPERASIONAL", "BIAYA SAMSAT"] },
+      { key: "messenger", label: "Nama messenger", type: "text", placeholder: "Contoh: Ahmad" },
+      { key: "keterangan", label: "Keterangan", type: "text", placeholder: "Rincian keperluan kas" },
+      { key: "in", label: "Kas masuk (in)", type: "number", placeholder: "0" },
+      { key: "out", label: "Kas keluar (out)", type: "number", placeholder: "0" },
+      { key: "total", label: "Total saldo berjalan", type: "number", placeholder: "0" },
+    ];
+
+    const kasMessengerColumns: Column[] = [
+      { key: "tanggal", label: "Tanggal", filterable: true, filterType: "text" },
+      { 
+        key: "jenis", 
+        label: "Jenis kas", 
+        filterable: true, 
+        filterType: "select", 
+        filterOptions: ["PETTY CASH", "OPERASIONAL", "BIAYA SAMSAT"] 
+      },
+      { key: "messenger", label: "Messenger", filterable: true, filterType: "text" },
+      { key: "keterangan", label: "Keterangan" },
+      { key: "in", label: "Masuk" },
+      { key: "out", label: "Keluar" },
+      { key: "total", label: "Saldo akhir" },
+    ];
+
+    const totalKasMasuk = kasMessengerData.reduce((acc, item) => acc + item.in, 0);
+    const totalKasKeluar = kasMessengerData.reduce((acc, item) => acc + item.out, 0);
+    const sisaSaldoMessenger = totalKasMasuk - totalKasKeluar;
+
+    const handleAddSubmit = (rows: any[]) => {
+      const nextId = Math.max(0, ...kasMessengerData.map(d => d.id)) + 1;
+      const newItems = rows.map((row, idx) => ({
+        id: nextId + idx,
+        ...row,
+        in: parseInt(row.in) || 0,
+        out: parseInt(row.out) || 0,
+        total: parseInt(row.total) || 0,
+      }));
+      setKasMessengerData([...kasMessengerData, ...newItems]);
+      setIsAdding(false);
+      toast.success(`${newItems.length} data kas messenger berhasil ditambahkan`);
+    };
+
+    if (isAdding) {
+      return (
+        <FinanceAddPage
+          title="Tambah data kas messenger"
+          description="Masukkan pencatatan transaksi kas masuk atau pengeluaran operasional messenger"
+          fields={kasMessengerFields}
+          onBack={() => setIsAdding(false)}
+          onSubmit={handleAddSubmit}
+        />
+      );
+    }
+
+    return (
+      <div className="space-y-6">
+        {renderSubTabHeader("Kas messenger", "Kelola pencatatan kas petty cash dan operasional messenger")}
+
+        {/* Level 3: Table */}
+        <Card className="p-4 sm:p-5 border border-border bg-card shadow-xs">
+          <div className="mb-4">
+            <h3 className="text-base font-semibold text-foreground">Buku kas harian messenger</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">Riwayat lengkap mutasi kas masuk dan keluar kurir/messenger di lapangan</p>
+          </div>
+          <EnhancedTableWithDialogs
+            columns={kasMessengerColumns}
+            data={kasMessengerData}
+            onAdd={() => setIsAdding(true)}
+            onView={(item) => setViewingItem({ item, subTabTitle: "Kas messenger", columns: kasMessengerColumns })}
+            onEdit={(item, updated) => {
+              setKasMessengerData(kasMessengerData.map(d => d.id === item.id ? { ...d, ...updated } : d));
+            }}
+            onDelete={(item) => {
+              setKasMessengerData(kasMessengerData.filter(d => d.id !== item.id));
+            }}
+            searchPlaceholder="Cari berdasarkan messenger, keterangan, jenis..."
+            editFields={kasMessengerFields}
+          />
+        </Card>
+
+        {/* Level 3: Summary Cards (Requirement 4: MOVED BELOW TABLE) */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <Card className="p-4 border border-border bg-card shadow-2xs">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-medium text-muted-foreground">Total kas masuk</p>
+                <h3 className="text-xl font-bold text-emerald-600 dark:text-emerald-400 mt-1 tabular-nums">
+                  {formatRupiah(totalKasMasuk)}
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">Penerimaan kas & petty cash</p>
+              </div>
+              <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-500">
+                <ArrowUpRight className="w-5 h-5" />
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-4 border border-border bg-card shadow-2xs">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-medium text-muted-foreground">Total kas keluar</p>
+                <h3 className="text-xl font-bold text-rose-600 dark:text-rose-400 mt-1 tabular-nums">
+                  {formatRupiah(totalKasKeluar)}
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">Operasional & biaya samsat</p>
+              </div>
+              <div className="w-10 h-10 rounded-lg bg-rose-500/10 flex items-center justify-center text-rose-500">
+                <ArrowDownRight className="w-5 h-5" />
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-4 border border-border bg-card shadow-2xs">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-medium text-muted-foreground">Sisa saldo kas messenger</p>
+                <h3 className="text-xl font-bold text-foreground mt-1 tabular-nums">
+                  {formatRupiah(sisaSaldoMessenger)}
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">Posisi saldo saat ini</p>
+              </div>
+              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                <Wallet className="w-5 h-5" />
+              </div>
+            </div>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  // ==========================================
+  // 3. SUB-TAB: KAS KANTOR
+  // ==========================================
+  if (tab === "kas-kantor") {
+    const kasKantorFields: FieldConfig[] = [
+      { key: "tanggal", label: "Tanggal", type: "date" },
+      { key: "status", label: "Tipe arus kas", type: "select", options: ["Debit", "Kredit"] },
+      { key: "keterangan", label: "Keterangan", type: "text", placeholder: "Contoh: Pembayaran invoice atau biaya sewa" },
+      { key: "debit", label: "Debit (masuk)", type: "number", placeholder: "0" },
+      { key: "kredit", label: "Kredit (keluar)", type: "number", placeholder: "0" },
+      { key: "total", label: "Saldo akhir", type: "number", placeholder: "0" },
+    ];
+
+    const kasKantorColumns: Column[] = [
+      { key: "tanggal", label: "Tanggal", filterable: true, filterType: "text" },
+      { 
+        key: "status", 
+        label: "Status", 
+        filterable: true, 
+        filterType: "select", 
+        filterOptions: ["Debit", "Kredit"] 
+      },
+      { key: "keterangan", label: "Keterangan" },
+      { key: "debit", label: "Debit (masuk)" },
+      { key: "kredit", label: "Kredit (keluar)" },
+      { key: "total", label: "Saldo" },
+    ];
+
+    const totalDebit = kasKantorData.reduce((acc, item) => acc + item.debit, 0);
+    const totalKredit = kasKantorData.reduce((acc, item) => acc + item.kredit, 0);
+    const saldoAkhirKantor = totalDebit - totalKredit;
+
+    const handleAddSubmit = (rows: any[]) => {
+      const nextId = Math.max(0, ...kasKantorData.map(d => d.id)) + 1;
+      const newItems = rows.map((row, idx) => ({
+        id: nextId + idx,
+        ...row,
+        debit: parseInt(row.debit) || 0,
+        kredit: parseInt(row.kredit) || 0,
+        total: parseInt(row.total) || 0,
+      }));
+      setKasKantorData([...kasKantorData, ...newItems]);
+      setIsAdding(false);
+      toast.success(`${newItems.length} data kas kantor berhasil ditambahkan`);
+    };
+
+    if (isAdding) {
+      return (
+        <FinanceAddPage
+          title="Tambah transaksi kas kantor"
+          description="Catat arus kas masuk debit ataupun pengeluaran kas kredit kantor"
+          fields={kasKantorFields}
+          onBack={() => setIsAdding(false)}
+          onSubmit={handleAddSubmit}
+        />
+      );
+    }
+
+    return (
+      <div className="space-y-6">
+        {renderSubTabHeader("Kas kantor", "Rekapitulasi arus kas masuk debit dan kas keluar kredit kantor")}
+
+        {/* Level 3: Table */}
+        <Card className="p-4 sm:p-5 border border-border bg-card shadow-xs">
+          <div className="mb-4">
+            <h3 className="text-base font-semibold text-foreground">Buku kas besar kantor</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">Jurnal pencatatan mutasi kas bank dan kas tunai perusahaan</p>
+          </div>
+          <EnhancedTableWithDialogs
+            columns={kasKantorColumns}
+            data={kasKantorData}
+            onAdd={() => setIsAdding(true)}
+            onView={(item) => setViewingItem({ item, subTabTitle: "Kas kantor", columns: kasKantorColumns })}
+            onEdit={(item, updated) => {
+              setKasKantorData(kasKantorData.map(d => d.id === item.id ? { ...d, ...updated } : d));
+            }}
+            onDelete={(item) => {
+              setKasKantorData(kasKantorData.filter(d => d.id !== item.id));
+            }}
+            searchPlaceholder="Cari berdasarkan keterangan transaksi..."
+            editFields={kasKantorFields}
+          />
+        </Card>
+
+        {/* Level 3: Summary Cards (Requirement 4: MOVED BELOW TABLE) */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <Card className="p-4 border border-border bg-card shadow-2xs">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-medium text-muted-foreground">Total penerimaan debit</p>
+                <h3 className="text-xl font-bold text-emerald-600 dark:text-emerald-400 mt-1 tabular-nums">
+                  {formatRupiah(totalDebit)}
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">Pemasukan kas utama kantor</p>
+              </div>
+              <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-500">
+                <ArrowUpRight className="w-5 h-5" />
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-4 border border-border bg-card shadow-2xs">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-medium text-muted-foreground">Total pengeluaran kredit</p>
+                <h3 className="text-xl font-bold text-rose-600 dark:text-rose-400 mt-1 tabular-nums">
+                  {formatRupiah(totalKredit)}
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">Biaya sewa, gaji, dan utilitas</p>
+              </div>
+              <div className="w-10 h-10 rounded-lg bg-rose-500/10 flex items-center justify-center text-rose-500">
+                <ArrowDownRight className="w-5 h-5" />
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-4 border border-border bg-card shadow-2xs">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-medium text-muted-foreground">Saldo kas kantor</p>
+                <h3 className="text-xl font-bold text-foreground mt-1 tabular-nums">
+                  {formatRupiah(saldoAkhirKantor)}
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">Saldo bersih kas operasional</p>
+              </div>
+              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                <Wallet className="w-5 h-5" />
+              </div>
+            </div>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  // ==========================================
+  // 4. SUB-TAB: PENGELUARAN
+  // ==========================================
+  if (tab === "pengeluaran") {
+    const pengeluaranFields: FieldConfig[] = [
+      { key: "tanggal", label: "Tanggal pengeluaran", type: "date" },
+      { key: "keterangan", label: "Keterangan biaya", type: "text", placeholder: "Contoh: Listrik bulanan, ATK kantor" },
+      { key: "nominal", label: "Nominal pengeluaran", type: "number", placeholder: "0" },
+    ];
+
+    const pengeluaranColumns: Column[] = [
+      { key: "tanggal", label: "Tanggal", filterable: true, filterType: "text" },
+      { key: "keterangan", label: "Keterangan pengeluaran", filterable: true, filterType: "text" },
+      { key: "nominal", label: "Nominal" },
+    ];
+
+    const totalPengeluaranBulanIni = pengeluaranData.reduce((acc, item) => acc + item.nominal, 0);
+
+    const handleAddSubmit = (rows: any[]) => {
+      const nextId = Math.max(0, ...pengeluaranData.map(d => d.id)) + 1;
+      const newItems = rows.map((row, idx) => ({
+        id: nextId + idx,
+        ...row,
+        nominal: parseInt(row.nominal) || 0,
+      }));
+      setPengeluaranData([...pengeluaranData, ...newItems]);
+      setIsAdding(false);
+      toast.success(`${newItems.length} data pengeluaran berhasil ditambahkan`);
+    };
+
+    if (isAdding) {
+      return (
+        <FinanceAddPage
+          title="Tambah data pengeluaran"
+          description="Catat biaya operasional, perlengkapan, atau utilitas kantor"
+          fields={pengeluaranFields}
+          onBack={() => setIsAdding(false)}
+          onSubmit={handleAddSubmit}
+        />
+      );
+    }
+
+    return (
+      <div className="space-y-6">
+        {renderSubTabHeader("Pengeluaran", "Catat dan monitor seluruh pos pengeluaran operasional kantor")}
+
+        {/* Level 3: Table */}
+        <Card className="p-4 sm:p-5 border border-border bg-card shadow-xs">
+          <div className="mb-4">
+            <h3 className="text-base font-semibold text-foreground">Daftar beban operasional</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">Pencatatan rincian biaya tetap dan variabel operasional kantor</p>
+          </div>
+          <EnhancedTableWithDialogs
+            columns={pengeluaranColumns}
+            data={pengeluaranData}
+            onAdd={() => setIsAdding(true)}
+            onView={(item) => setViewingItem({ item, subTabTitle: "Pengeluaran", columns: pengeluaranColumns })}
+            onEdit={(item, updated) => {
+              setPengeluaranData(pengeluaranData.map(d => d.id === item.id ? { ...d, ...updated } : d));
+            }}
+            onDelete={(item) => {
+              setPengeluaranData(pengeluaranData.filter(d => d.id !== item.id));
+            }}
+            searchPlaceholder="Cari berdasarkan keterangan pengeluaran..."
+            editFields={pengeluaranFields}
+          />
+        </Card>
+
+        {/* Level 3: Summary Cards (Requirement 4: MOVED BELOW TABLE) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Card className="p-4 border border-border bg-card shadow-2xs">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-medium text-muted-foreground">Total pengeluaran operasional</p>
+                <h3 className="text-xl font-bold text-rose-600 dark:text-rose-400 mt-1 tabular-nums">
+                  {formatRupiah(totalPengeluaranBulanIni)}
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">Akumulasi pengeluaran kantor</p>
+              </div>
+              <div className="w-10 h-10 rounded-lg bg-rose-500/10 flex items-center justify-center text-rose-500">
+                <ArrowDownRight className="w-5 h-5" />
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-4 border border-border bg-card shadow-2xs">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-medium text-muted-foreground">Jumlah transaksi pengeluaran</p>
+                <h3 className="text-xl font-bold text-foreground mt-1 tabular-nums">
+                  {pengeluaranData.length} transaksi
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">Item operasional tercatat</p>
+              </div>
+              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                <Receipt className="w-5 h-5" />
+              </div>
+            </div>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  // ==========================================
+  // 5. SUB-TAB: DATA PENJUALAN
+  // ==========================================
+  if (tab === "penjualan") {
+    return (
+      <div className="space-y-6">
+        {renderSubTabHeader("Data penjualan", "Daftar berkas pengurusan mutasi, balik nama, dan pajak kendaraan")}
+        <DataPenjualan />
+      </div>
+    );
+  }
+
+  // ==========================================
+  // 6. SUB-TAB: TAGIHAN
+  // ==========================================
+  if (tab === "tagihan") {
+    const tagihanFields: FieldConfig[] = [
+      { key: "tanggal", label: "Tanggal tagihan", type: "date" },
+      { key: "customer", label: "Customer", type: "text", placeholder: "Nama customer atau badan usaha" },
+      { key: "nopol", label: "Plat nomor", type: "text", placeholder: "Contoh: B 1234 ABC" },
+      { 
+        key: "jenisLayanan", 
+        label: "Jenis layanan", 
+        type: "select", 
+        options: ["Mutasi LD", "Mutasi AS", "BBN 1", "BBN 2", "Pajak Tahunan", "Perpanjangan 5 Tahun", "Balik Nama", "Ganti Plat", "Duplikat STNK"] 
+      },
+      { key: "totalTagihan", label: "Total tagihan", type: "number", placeholder: "0" },
+      { key: "terbayar", label: "Terbayar", type: "number", placeholder: "0" },
+      { key: "sisa", label: "Sisa tagihan", type: "number", placeholder: "0" },
+      { key: "jatuhTempo", label: "Jatuh tempo", type: "date" },
+      { key: "status", label: "Status tagihan", type: "select", options: ["Lunas", "Belum Lunas", "Belum Bayar"] },
+    ];
+
+    const tagihanBelumLunas = tagihanData.filter(d => d.status !== "Lunas");
+    const tagihanLunas = tagihanData.filter(d => d.status === "Lunas");
+
+    const totalPiutang = tagihanBelumLunas.reduce((acc, item) => acc + item.sisa, 0);
+    const totalTerbayar = tagihanLunas.reduce((acc, item) => acc + item.totalTagihan, 0);
+
+    const handleAddSubmit = (rows: any[]) => {
+      const nextId = Math.max(0, ...tagihanData.map(d => d.id)) + 1;
+      const newItems = rows.map((row, idx) => ({
+        id: nextId + idx,
+        ...row,
+        totalTagihan: parseInt(row.totalTagihan) || 0,
+        terbayar: parseInt(row.terbayar) || 0,
+        sisa: parseInt(row.sisa) || 0,
+      }));
+      setTagihanData([...tagihanData, ...newItems]);
+      setIsAdding(false);
+      toast.success(`${newItems.length} data tagihan berhasil ditambahkan`);
+    };
+
+    if (isAdding) {
+      return (
+        <FinanceAddPage
+          title="Tambah data tagihan"
+          description="Masukkan faktur tagihan invoice baru untuk customer atau mitra rekanan"
+          fields={tagihanFields}
+          onBack={() => setIsAdding(false)}
+          onSubmit={handleAddSubmit}
+        />
+      );
+    }
+
+    const tagihanBelumLunasColumns = [
+      { key: "tanggal", label: "Tanggal", filterable: true, filterType: "text" as const },
+      { key: "customer", label: "Customer", filterable: true, filterType: "text" as const },
+      { key: "nopol", label: "Plat nomor", filterable: true, filterType: "text" as const },
+      { key: "jenisLayanan", label: "Layanan" },
+      { key: "totalTagihan", label: "Total tagihan" },
+      { key: "terbayar", label: "Terbayar" },
+      { key: "sisa", label: "Sisa piutang" },
+      { key: "jatuhTempo", label: "Jatuh tempo" },
+      { key: "status", label: "Status" },
+    ];
+
+    const tagihanLunasColumns = [
+      { key: "tanggal", label: "Tanggal", filterable: true, filterType: "text" as const },
+      { key: "customer", label: "Customer", filterable: true, filterType: "text" as const },
+      { key: "nopol", label: "Plat nomor", filterable: true, filterType: "text" as const },
+      { key: "jenisLayanan", label: "Layanan" },
+      { key: "totalTagihan", label: "Total tagihan" },
+      { key: "terbayar", label: "Terbayar" },
+      { key: "jatuhTempo", label: "Tanggal lunas" },
+      { key: "status", label: "Status" },
+    ];
+
+    return (
+      <div className="space-y-6">
+        {renderSubTabHeader("Tagihan", "Monitoring status piutang, tagihan lunas, dan jatuh tempo")}
+
+        {/* Level 3: Table 1 - Tagihan Belum Lunas */}
+        <Card className="p-4 sm:p-5 border border-border bg-card shadow-xs">
+          <div className="mb-4">
+            <h3 className="text-base font-semibold text-foreground">Tagihan belum lunas</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">Daftar invoice aktif yang masih memiliki sisa pembayaran atau belum diselesaikan</p>
+          </div>
+          <EnhancedTableWithDialogs
+            columns={tagihanBelumLunasColumns}
+            data={tagihanBelumLunas}
+            onAdd={() => setIsAdding(true)}
+            onView={(item) => setViewingItem({ item, subTabTitle: "Tagihan belum lunas", columns: tagihanBelumLunasColumns })}
+            onEdit={(item, updated) => {
+              setTagihanData(tagihanData.map(d => d.id === item.id ? { ...d, ...updated } : d));
+            }}
+            onDelete={(item) => {
+              setTagihanData(tagihanData.filter(d => d.id !== item.id));
+            }}
+            searchPlaceholder="Cari customer, nopol tagihan..."
+            editFields={tagihanFields}
+          />
+        </Card>
+
+        {/* Level 3: Table 2 - Tagihan Lunas */}
+        <Card className="p-4 sm:p-5 border border-border bg-card shadow-xs">
+          <div className="mb-4">
+            <h3 className="text-base font-semibold text-foreground">Tagihan lunas</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">Arsip seluruh transaksi tagihan invoice yang telah terbayar lunas 100%</p>
+          </div>
+          <EnhancedTableWithDialogs
+            columns={tagihanLunasColumns}
+            data={tagihanLunas}
+            onView={(item) => setViewingItem({ item, subTabTitle: "Tagihan lunas", columns: tagihanLunasColumns })}
+            onEdit={(item, updated) => {
+              setTagihanData(tagihanData.map(d => d.id === item.id ? { ...d, ...updated } : d));
+            }}
+            onDelete={(item) => {
+              setTagihanData(tagihanData.filter(d => d.id !== item.id));
+            }}
+            searchPlaceholder="Cari riwayat tagihan lunas..."
+            hideAddButton={true}
+            editFields={tagihanFields}
+          />
+        </Card>
+
+        {/* Level 3: Summary Cards (Requirement 4: MOVED BELOW TABLES) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Card className="p-4 border border-border bg-card shadow-2xs">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-medium text-muted-foreground">Total piutang belum lunas</p>
+                <h3 className="text-xl font-bold text-rose-600 dark:text-rose-400 mt-1 tabular-nums">
+                  {formatRupiah(totalPiutang)}
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">{tagihanBelumLunas.length} tagihan menunggu pelunasan</p>
+              </div>
+              <div className="w-10 h-10 rounded-lg bg-rose-500/10 flex items-center justify-center text-rose-500">
+                <AlertCircle className="w-5 h-5" />
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-4 border border-border bg-card shadow-2xs">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-medium text-muted-foreground">Total tagihan terbayar lunas</p>
+                <h3 className="text-xl font-bold text-emerald-600 dark:text-emerald-400 mt-1 tabular-nums">
+                  {formatRupiah(totalTerbayar)}
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">{tagihanLunas.length} tagihan telah lunas</p>
+              </div>
+              <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-500">
+                <FileCheck className="w-5 h-5" />
+              </div>
+            </div>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  // ==========================================
+  // 7. SUB-TAB: LABA RUGI
+  // ==========================================
   if (tab === "laba-rugi") {
-    // Hitung total pemasukan dari profit data
+    // Total calculation preserving exact business logic
     const totalPemasukan = profitData.reduce((acc, item) => {
-      // Hanya hitung uang masuk yang positif (bukan minus/kurang bayar)
       return acc + (item.uangMasuk > 0 ? item.uangMasuk : 0);
     }, 0);
     
-    // Hitung total pengeluaran dari berbagai sumber
     const pengeluaranKantor = pengeluaranData.reduce((acc, item) => acc + item.nominal, 0);
     const pengeluaranMessenger = kasMessengerData.reduce((acc, item) => acc + item.out, 0);
     const pengeluaranKasKantor = kasKantorData.reduce((acc, item) => acc + item.kredit, 0);
@@ -653,7 +769,7 @@ export function FinanceContent({ tab }: FinanceContentProps) {
     const totalPengeluaran = pengeluaranKantor + pengeluaranMessenger + pengeluaranKasKantor + biayaSamsat;
     const labaRugiBersih = totalPemasukan - totalPengeluaran;
 
-    // Prepare data untuk tabel
+    // Prepared data for transaction breakdown table
     const tablePemasukan = profitData
       .filter(item => item.uangMasuk > 0)
       .map(item => ({
@@ -667,7 +783,7 @@ export function FinanceContent({ tab }: FinanceContentProps) {
     
     const tablePengeluaranKantor = pengeluaranData.map(item => ({
       tanggal: item.tanggal,
-      kategori: "Pengeluaran Kantor",
+      kategori: "Pengeluaran kantor",
       keterangan: item.keterangan,
       invoice: "-",
       nominal: item.nominal,
@@ -678,7 +794,7 @@ export function FinanceContent({ tab }: FinanceContentProps) {
       .filter(item => item.out > 0)
       .map(item => ({
         tanggal: item.tanggal,
-        kategori: `Pengeluaran Messenger - ${item.jenis}`,
+        kategori: `Pengeluaran messenger - ${item.jenis}`,
         keterangan: `${item.keterangan} (${item.messenger})`,
         invoice: "-",
         nominal: item.out,
@@ -689,7 +805,7 @@ export function FinanceContent({ tab }: FinanceContentProps) {
       .filter(item => item.kredit > 0)
       .map(item => ({
         tanggal: item.tanggal,
-        kategori: "Pengeluaran Kas Kantor",
+        kategori: "Pengeluaran kas kantor",
         keterangan: item.keterangan,
         invoice: "-",
         nominal: item.kredit,
@@ -700,7 +816,7 @@ export function FinanceContent({ tab }: FinanceContentProps) {
       .filter(item => item.biayaSamsat > 0)
       .map(item => ({
         tanggal: item.tanggal,
-        kategori: "Biaya Samsat",
+        kategori: "Biaya samsat",
         keterangan: `${item.pengurusan} - ${item.nopol}`,
         invoice: item.invoice,
         nominal: item.biayaSamsat,
@@ -713,219 +829,373 @@ export function FinanceContent({ tab }: FinanceContentProps) {
       ...tablePengeluaranMessenger,
       ...tablePengeluaranKasKantor,
       ...tableBiayaSamsat
-    ].sort((a, b) => {
-      // Sort by date (simple string comparison for DD/MM/YYYY format)
-      const [dayA, monthA, yearA] = a.tanggal.split('/');
-      const [dayB, monthB, yearB] = b.tanggal.split('/');
-      const dateA = new Date(parseInt(yearA), parseInt(monthA) - 1, parseInt(dayA));
-      const dateB = new Date(parseInt(yearB), parseInt(monthB) - 1, parseInt(dayB));
-      return dateB.getTime() - dateA.getTime(); // Descending order
-    });
+    ];
+
+    // Modern Chart Tooltip formatter
+    const CustomChartTooltip = ({ active, payload, label }: any) => {
+      if (active && payload && payload.length) {
+        return (
+          <div className="bg-card border border-border p-3 rounded-lg shadow-md text-xs space-y-1.5 min-w-[180px]">
+            <p className="font-semibold text-foreground border-b border-border/60 pb-1">Bulan {label}</p>
+            {payload.map((entry: any, index: number) => (
+              <div key={`item-${index}`} className="flex justify-between items-center gap-2">
+                <span className="text-muted-foreground flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color }} />
+                  {entry.name}:
+                </span>
+                <span className="font-mono font-medium text-foreground">
+                  {formatRupiah(entry.value)}
+                </span>
+              </div>
+            ))}
+          </div>
+        );
+      }
+      return null;
+    };
+
+    const labaRugiColumns = [
+      { key: "tanggal", label: "Tanggal", filterable: true, filterType: "text" as const },
+      { 
+        key: "kategori", 
+        label: "Kategori transaksi", 
+        filterable: true, 
+        filterType: "select" as const, 
+        filterOptions: [
+          "Pemasukan", 
+          "Pengeluaran kantor", 
+          "Pengeluaran messenger - OPERASIONAL",
+          "Pengeluaran messenger - BIAYA SAMSAT",
+          "Pengeluaran messenger - PETTY CASH",
+          "Pengeluaran kas kantor",
+          "Biaya samsat"
+        ] 
+      },
+      { key: "keterangan", label: "Keterangan", filterable: true, filterType: "text" as const },
+      { key: "invoice", label: "Nomor invoice" },
+      { 
+        key: "nominal", 
+        label: "Nominal",
+        render: (value: any, row: any) => {
+          const isIncome = row.type === "in";
+          return (
+            <span className={`font-mono tabular-nums font-medium ${isIncome ? "text-emerald-600 dark:text-emerald-400" : "text-rose-500 dark:text-rose-400"}`}>
+              {isIncome ? "+" : "-"} {formatRupiah(value)}
+            </span>
+          );
+        }
+      },
+    ];
 
     return (
-      <div className="space-y-4">
-        <Card className="glass-card p-4">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+      <div className="space-y-6">
+        {/* Header Level 2 with Breadcrumb & Period Selector (Requirement 2, 3, 13: Export removed) */}
+        <div className="space-y-1.5 pb-3 border-b border-border/70">
+          <nav className="text-xs text-muted-foreground flex items-center gap-1.5" aria-label="Breadcrumb">
+            <span>Finance</span>
+            <span>/</span>
+            <span className="text-foreground font-medium">Laba rugi</span>
+          </nav>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <h3>Laporan Laba Rugi</h3>
-              <p className="text-sm text-muted-foreground">Analisis keuangan bisnis Anda</p>
+              <h2 className="text-lg font-semibold tracking-tight text-foreground">Laba rugi</h2>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">Analisis performa keuangan, total pendapatan, dan laba bersih</p>
             </div>
-            <div className="flex gap-2">
+
+            <div className="flex items-center gap-2 self-start sm:self-auto">
               <Select value={filterPeriod} onValueChange={setFilterPeriod}>
-                <SelectTrigger className="w-[180px] bg-input-background border-border">
+                <SelectTrigger className="w-[140px] bg-background border-border h-9 text-xs">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="daily">Harian</SelectItem>
-                  <SelectItem value="weekly">Mingguan</SelectItem>
-                  <SelectItem value="monthly">Bulanan</SelectItem>
-                  <SelectItem value="yearly">Tahunan</SelectItem>
+                  <SelectItem value="daily" className="text-xs">Harian</SelectItem>
+                  <SelectItem value="weekly" className="text-xs">Mingguan</SelectItem>
+                  <SelectItem value="monthly" className="text-xs">Bulanan</SelectItem>
+                  <SelectItem value="yearly" className="text-xs">Tahunan</SelectItem>
                 </SelectContent>
               </Select>
-              <Button 
-                onClick={handleExportLabaRugiPDF}
-                className="bg-primary hover:bg-primary/90"
-              >
-                <Download className="w-4 h-4 mr-2" />
-                Export PDF
-              </Button>
             </div>
           </div>
+        </div>
 
-          {/* Summary Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <Card className="glass-card p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Pendapatan</p>
-                  <h3 className="text-2xl text-green-400 mt-1">
-                    Rp {totalPemasukan.toLocaleString()}
-                  </h3>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {tablePemasukan.length} transaksi
-                  </p>
-                </div>
-                <TrendingUp className="w-8 h-8 text-green-400" />
-              </div>
-            </Card>
-            <Card className="glass-card p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Pengeluaran</p>
-                  <h3 className="text-2xl text-red-400 mt-1">
-                    Rp {totalPengeluaran.toLocaleString()}
-                  </h3>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {tablePengeluaranKantor.length + tablePengeluaranMessenger.length + tablePengeluaranKasKantor.length + tableBiayaSamsat.length} transaksi
-                  </p>
-                </div>
-                <TrendingDown className="w-8 h-8 text-red-400" />
-              </div>
-            </Card>
-            <Card className="glass-card p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Laba/Rugi Bersih</p>
-                  <h3 className={`text-2xl mt-1 ${labaRugiBersih >= 0 ? 'text-blue-400' : 'text-red-400'}`}>
-                    Rp {labaRugiBersih.toLocaleString()}
-                  </h3>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {labaRugiBersih >= 0 ? 'Laba' : 'Rugi'}
-                  </p>
-                </div>
-                {labaRugiBersih >= 0 ? (
-                  <TrendingUp className="w-8 h-8 text-blue-400" />
-                ) : (
-                  <TrendingDown className="w-8 h-8 text-red-400" />
-                )}
-              </div>
-            </Card>
+        {/* Level 3: Modern Chart (Requirement 8) */}
+        <Card className="p-4 sm:p-5 border border-border bg-card shadow-xs">
+          <div className="mb-4">
+            <h3 className="text-base font-semibold text-foreground">Grafik perbandingan pendapatan & pengeluaran</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">Visualisasi tren keuangan semester berjalan</p>
           </div>
-
-          {/* Detail breakdown */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            <Card className="glass-card p-4 border-l-4 border-l-green-500">
-              <h4 className="text-sm mb-3 text-green-400">Detail Pendapatan</h4>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Uang Masuk Transaksi:</span>
-                  <span className="text-green-400">Rp {totalPemasukan.toLocaleString()}</span>
-                </div>
-              </div>
-            </Card>
-            <Card className="glass-card p-4 border-l-4 border-l-red-500">
-              <h4 className="text-sm mb-3 text-red-400">Detail Pengeluaran</h4>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Pengeluaran Kantor:</span>
-                  <span className="text-red-400">Rp {pengeluaranKantor.toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Pengeluaran Messenger:</span>
-                  <span className="text-red-400">Rp {pengeluaranMessenger.toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Pengeluaran Kas Kantor:</span>
-                  <span className="text-red-400">Rp {pengeluaranKasKantor.toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Biaya Samsat:</span>
-                  <span className="text-red-400">Rp {biayaSamsat.toLocaleString()}</span>
-                </div>
-                <div className="pt-2 border-t border-border flex justify-between">
-                  <span>Total:</span>
-                  <span className="text-red-400">Rp {totalPengeluaran.toLocaleString()}</span>
-                </div>
-              </div>
-            </Card>
-          </div>
-
-          {/* Chart */}
-          <div className="h-[400px] mb-6">
+          
+          <div className="h-[340px] w-full pt-2">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={labaRugiData}>
-                <CartesianGrid key="grid" strokeDasharray="3 3" stroke="#374151" />
-                <XAxis key="x-axis" dataKey="bulan" stroke="#9CA3AF" />
-                <YAxis key="y-axis" stroke="#9CA3AF" />
-                <Tooltip
-                  key="tooltip"
-                  contentStyle={{
-                    backgroundColor: '#1F2937',
-                    border: '1px solid #374151',
-                    borderRadius: '8px'
-                  }}
+              <BarChart data={labaRugiData} margin={{ top: 10, right: 10, left: 10, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
+                <XAxis 
+                  dataKey="bulan" 
+                  tickLine={false} 
+                  axisLine={{ stroke: 'hsl(var(--border))' }} 
+                  fontSize={12} 
                 />
-                <Bar key="bar-pendapatan" dataKey="pendapatan" fill="#10b981" name="Pendapatan" />
-                <Bar key="bar-pengeluaran" dataKey="pengeluaran" fill="#ef4444" name="Pengeluaran" />
-                <Bar key="bar-laba" dataKey="laba" fill="#3b82f6" name="Laba" />
+                <YAxis 
+                  tickLine={false} 
+                  axisLine={false} 
+                  fontSize={11} 
+                  tickFormatter={(val) => `${val / 1000000} jt`}
+                />
+                <Tooltip content={<CustomChartTooltip />} />
+                <Legend 
+                  verticalAlign="top" 
+                  align="right" 
+                  wrapperStyle={{ paddingBottom: '16px', fontSize: '12px' }}
+                />
+                <Bar 
+                  dataKey="pendapatan" 
+                  name="Pendapatan" 
+                  fill="#10b981" 
+                  radius={[4, 4, 0, 0]} 
+                />
+                <Bar 
+                  dataKey="pengeluaran" 
+                  name="Pengeluaran" 
+                  fill="#f43f5e" 
+                  radius={[4, 4, 0, 0]} 
+                />
+                <Bar 
+                  dataKey="laba" 
+                  name="Laba bersih" 
+                  fill="#3b82f6" 
+                  radius={[4, 4, 0, 0]} 
+                />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </Card>
 
-        {/* Tabel Detail Transaksi */}
-        <Card className="glass-card p-4">
-          <h3 className="text-sm mb-3">Detail Transaksi Pemasukan & Pengeluaran</h3>
+        {/* Level 3: Table - Detail Transaksi Pemasukan & Pengeluaran */}
+        <Card className="p-4 sm:p-5 border border-border bg-card shadow-xs">
+          <div className="mb-4">
+            <h3 className="text-base font-semibold text-foreground">Rincian mutasi transaksi kas</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">Daftar gabungan pos arus kas masuk dan keluar bisnis</p>
+          </div>
           <EnhancedTableWithDialogs
-            columns={[
-              { key: "tanggal", label: "Tanggal", filterable: true, filterType: "text" },
-              { key: "kategori", label: "Kategori", filterable: true, filterType: "select", 
-                filterOptions: [
-                  "Pemasukan", 
-                  "Pengeluaran Kantor", 
-                  "Pengeluaran Messenger - OPERASIONAL",
-                  "Pengeluaran Messenger - BIAYA SAMSAT",
-                  "Pengeluaran Messenger - PETTY CASH",
-                  "Pengeluaran Kas Kantor",
-                  "Biaya Samsat"
-                ] 
-              },
-              { key: "keterangan", label: "Keterangan", filterable: true, filterType: "text" },
-              { key: "invoice", label: "Invoice", filterable: true, filterType: "text" },
-              { 
-                key: "nominal", 
-                label: "Nominal",
-                render: (value: any, row: any) => {
-                  const isIncome = row.type === "in";
-                  return (
-                    <span className={isIncome ? "text-green-400" : "text-red-400"}>
-                      {isIncome ? "+" : "-"} Rp {value.toLocaleString()}
-                    </span>
-                  );
-                }
-              },
-            ]}
+            columns={labaRugiColumns}
             data={combinedData.map((item, idx) => ({ id: idx + 1, ...item }))}
-            onExport={(format) => {
-              toast.success(`Export ${format.toUpperCase()} Detail Laba Rugi berhasil!`);
-            }}
-            searchPlaceholder="Cari berdasarkan tanggal, kategori, keterangan, invoice..."
+            onView={(item) => setViewingItem({ item, subTabTitle: "Laba rugi", columns: labaRugiColumns })}
+            searchPlaceholder="Cari tanggal, kategori, invoice, keterangan..."
             hideAddButton={true}
             hideEditButton={true}
             hideDeleteButton={true}
           />
-          
-          {/* Summary di bawah tabel */}
-          <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card className="glass-card p-4 bg-green-500/10 border-green-500/20">
-              <p className="text-sm text-muted-foreground">Total Pemasukan</p>
-              <p className="text-xl text-green-400 mt-1">
-                Rp {totalPemasukan.toLocaleString()}
-              </p>
-            </Card>
-            <Card className="glass-card p-4 bg-red-500/10 border-red-500/20">
-              <p className="text-sm text-muted-foreground">Total Pengeluaran</p>
-              <p className="text-xl text-red-400 mt-1">
-                Rp {totalPengeluaran.toLocaleString()}
-              </p>
-            </Card>
-            <Card className={`glass-card p-4 ${labaRugiBersih >= 0 ? 'bg-blue-500/10 border-blue-500/20' : 'bg-red-500/10 border-red-500/20'}`}>
-              <p className="text-sm text-muted-foreground">Laba/Rugi Bersih</p>
-              <p className={`text-xl mt-1 ${labaRugiBersih >= 0 ? 'text-blue-400' : 'text-red-400'}`}>
-                Rp {labaRugiBersih.toLocaleString()}
-              </p>
-            </Card>
-          </div>
+        </Card>
+
+        {/* Level 3: Summary Cards (Requirement 4: MOVED BELOW TABLE) */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <Card className="p-4 border border-border bg-card shadow-2xs">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-medium text-muted-foreground">Total pendapatan</p>
+                <h3 className="text-xl font-bold text-emerald-600 dark:text-emerald-400 mt-1 tabular-nums">
+                  {formatRupiah(totalPemasukan)}
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">{tablePemasukan.length} transaksi pemasukan</p>
+              </div>
+              <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-500">
+                <TrendingUp className="w-5 h-5" />
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-4 border border-border bg-card shadow-2xs">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-medium text-muted-foreground">Total pengeluaran</p>
+                <h3 className="text-xl font-bold text-rose-600 dark:text-rose-400 mt-1 tabular-nums">
+                  {formatRupiah(totalPengeluaran)}
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">Operasional, kas & samsat</p>
+              </div>
+              <div className="w-10 h-10 rounded-lg bg-rose-500/10 flex items-center justify-center text-rose-500">
+                <TrendingDown className="w-5 h-5" />
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-4 border border-border bg-card shadow-2xs">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-medium text-muted-foreground">Laba rugi bersih</p>
+                <h3 className={`text-xl font-bold mt-1 tabular-nums ${labaRugiBersih >= 0 ? 'text-blue-600 dark:text-blue-400' : 'text-rose-600 dark:text-rose-400'}`}>
+                  {formatRupiah(labaRugiBersih)}
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">{labaRugiBersih >= 0 ? "Surplus profit bersih" : "Defisit operasional"}</p>
+              </div>
+              <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${labaRugiBersih >= 0 ? 'bg-blue-500/10 text-blue-500' : 'bg-rose-500/10 text-rose-500'}`}>
+                {labaRugiBersih >= 0 ? <TrendingUp className="w-5 h-5" /> : <TrendingDown className="w-5 h-5" />}
+              </div>
+            </div>
+          </Card>
+        </div>
+
+        {/* Level 3: Breakdown Cards (BELOW TABLE) */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Card className="p-4 sm:p-5 border border-border bg-card shadow-xs">
+            <h4 className="text-sm font-semibold text-foreground mb-3">Rincian pendapatan</h4>
+            <div className="space-y-2.5 text-xs sm:text-sm">
+              <div className="flex justify-between items-center pb-2 border-b border-border/50">
+                <span className="text-muted-foreground">Penerimaan transaksi customer</span>
+                <span className="font-mono tabular-nums font-semibold text-emerald-600 dark:text-emerald-400">
+                  {formatRupiah(totalPemasukan)}
+                </span>
+              </div>
+              <div className="flex justify-between items-center pt-1">
+                <span className="font-medium text-foreground">Total pendapatan kotor</span>
+                <span className="font-mono tabular-nums font-bold text-foreground">
+                  {formatRupiah(totalPemasukan)}
+                </span>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-4 sm:p-5 border border-border bg-card shadow-xs">
+            <h4 className="text-sm font-semibold text-foreground mb-3">Rincian beban & pengeluaran</h4>
+            <div className="space-y-2 text-xs sm:text-sm">
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground">Pengeluaran kantor</span>
+                <span className="font-mono tabular-nums text-rose-500">{formatRupiah(pengeluaranKantor)}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground">Operasional messenger</span>
+                <span className="font-mono tabular-nums text-rose-500">{formatRupiah(pengeluaranMessenger)}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground">Pengeluaran kas kantor</span>
+                <span className="font-mono tabular-nums text-rose-500">{formatRupiah(pengeluaranKasKantor)}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground">Biaya samsat resmi</span>
+                <span className="font-mono tabular-nums text-rose-500">{formatRupiah(biayaSamsat)}</span>
+              </div>
+              <div className="flex justify-between items-center pt-2 border-t border-border/60">
+                <span className="font-medium text-foreground">Total beban pengeluaran</span>
+                <span className="font-mono tabular-nums font-bold text-rose-600 dark:text-rose-400">
+                  {formatRupiah(totalPengeluaran)}
+                </span>
+              </div>
+            </div>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  // ==========================================
+  // DIRECT FALLBACK SUB-TABS: BELUM BAYAR, PROFIT PENDING, CASHBACK PENDING
+  // ==========================================
+  if (tab === "belum-bayar") {
+    const belumBayarColumns = [
+      { key: "tanggal", label: "Tanggal", filterable: true, filterType: "text" as const },
+      { key: "nopol", label: "Plat nomor", filterable: true, filterType: "text" as const },
+      { key: "customer", label: "Customer", filterable: true, filterType: "text" as const },
+      { key: "namaBerkas", label: "Nama berkas" },
+      { key: "pengurusan", label: "Pengurusan" },
+      { key: "uangMasuk", label: "Uang masuk" },
+      { key: "biayaSamsat", label: "Biaya samsat" },
+      { key: "profit", label: "Profit" },
+      { key: "kekurangan", label: "Kekurangan" },
+      { key: "status", label: "Status", filterable: true, filterType: "select" as const, filterOptions: ["Belum Bayar", "Kurang Bayar"] },
+      { key: "invoice", label: "Invoice" },
+    ];
+
+    return (
+      <div className="space-y-6">
+        {renderSubTabHeader("Belum & kurang bayar", "Monitoring transaksi customer yang belum lunas")}
+        <Card className="p-4 sm:p-5 border border-border bg-card shadow-xs">
+          <EnhancedTableWithDialogs
+            columns={belumBayarColumns}
+            data={belumBayarData}
+            onView={(item) => setViewingItem({ item, subTabTitle: "Belum & kurang bayar", columns: belumBayarColumns })}
+            onEdit={(item, updated) => {
+              setBelumBayarData(belumBayarData.map(d => d.id === item.id ? { ...d, ...updated } : d));
+            }}
+            onDelete={(item) => {
+              setBelumBayarData(belumBayarData.filter(d => d.id !== item.id));
+            }}
+            searchPlaceholder="Cari customer, nopol..."
+            hideAddButton={true}
+          />
+        </Card>
+      </div>
+    );
+  }
+
+  if (tab === "profit-pending") {
+    const profitPendingColumns = [
+      { key: "tanggal", label: "Tanggal", filterable: true, filterType: "text" as const },
+      { key: "nopol", label: "Plat nomor", filterable: true, filterType: "text" as const },
+      { key: "customer", label: "Customer", filterable: true, filterType: "text" as const },
+      { key: "namaBerkas", label: "Nama berkas" },
+      { key: "pengurusan", label: "Pengurusan" },
+      { key: "uangMasuk", label: "Uang masuk" },
+      { key: "biayaSamsat", label: "Biaya samsat" },
+      { key: "profit", label: "Profit" },
+      { key: "status", label: "Status" },
+      { key: "invoice", label: "Invoice" },
+      { key: "alasan", label: "Alasan pending" },
+    ];
+
+    return (
+      <div className="space-y-6">
+        {renderSubTabHeader("Profit terpending", "Transaksi yang margin keuntungannya belum dapat dicairkan")}
+        <Card className="p-4 sm:p-5 border border-border bg-card shadow-xs">
+          <EnhancedTableWithDialogs
+            columns={profitPendingColumns}
+            data={profitPendingData}
+            onView={(item) => setViewingItem({ item, subTabTitle: "Profit terpending", columns: profitPendingColumns })}
+            onEdit={(item, updated) => {
+              setProfitPendingData(profitPendingData.map(d => d.id === item.id ? { ...d, ...updated } : d));
+            }}
+            onDelete={(item) => {
+              setProfitPendingData(profitPendingData.filter(d => d.id !== item.id));
+            }}
+            searchPlaceholder="Cari customer, nopol, alasan..."
+            hideAddButton={true}
+          />
+        </Card>
+      </div>
+    );
+  }
+
+  if (tab === "cashback-pending") {
+    const cashbackPendingColumns = [
+      { key: "tanggal", label: "Tanggal", filterable: true, filterType: "text" as const },
+      { key: "nopol", label: "Plat nomor", filterable: true, filterType: "text" as const },
+      { key: "customer", label: "Customer", filterable: true, filterType: "text" as const },
+      { key: "namaBerkas", label: "Nama berkas" },
+      { key: "pengurusan", label: "Pengurusan" },
+      { key: "uangMasuk", label: "Uang masuk" },
+      { key: "profit", label: "Profit" },
+      { key: "jumlahCashback", label: "Jumlah cashback" },
+      { key: "cashbackPersen", label: "%" },
+      { key: "status", label: "Status" },
+      { key: "invoice", label: "Invoice" },
+    ];
+
+    return (
+      <div className="space-y-6">
+        {renderSubTabHeader("Cashback terpending", "Alokasi insentif dan komisi cashback rekanan yang pending")}
+        <Card className="p-4 sm:p-5 border border-border bg-card shadow-xs">
+          <EnhancedTableWithDialogs
+            columns={cashbackPendingColumns}
+            data={cashbackPendingData}
+            onView={(item) => setViewingItem({ item, subTabTitle: "Cashback terpending", columns: cashbackPendingColumns })}
+            onEdit={(item, updated) => {
+              setCashbackPendingData(cashbackPendingData.map(d => d.id === item.id ? { ...d, ...updated } : d));
+            }}
+            onDelete={(item) => {
+              setCashbackPendingData(cashbackPendingData.filter(d => d.id !== item.id));
+            }}
+            searchPlaceholder="Cari customer, nopol..."
+            hideAddButton={true}
+          />
         </Card>
       </div>
     );

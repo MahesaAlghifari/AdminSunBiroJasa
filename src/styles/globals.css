@@ -374,3 +374,106 @@
 .light ::-webkit-scrollbar-thumb:hover { background: #3b82f6; }
 .dark  ::-webkit-scrollbar-thumb { background: #1e2749; }
 .dark  ::-webkit-scrollbar-thumb:hover { background: #3b82f6; }
+
+/* ── Finance Table Typography System (Phase 2B) ── */
+.finance-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+/* Font Size Modifiers (1x, 2x, 3x) */
+.finance-table--font-1 {
+  font-size: 0.75rem; /* 12px default */
+  line-height: 1.15rem;
+}
+.finance-table--font-1 .finance-table__header th {
+  font-size: 0.75rem;
+}
+.finance-table--font-1 .finance-table__body td {
+  font-size: 0.75rem;
+}
+
+.finance-table--font-2 {
+  font-size: 0.875rem; /* 14px larger */
+  line-height: 1.35rem;
+}
+.finance-table--font-2 .finance-table__header th {
+  font-size: 0.875rem;
+}
+.finance-table--font-2 .finance-table__body td {
+  font-size: 0.875rem;
+}
+
+.finance-table--font-3 {
+  font-size: 1rem; /* 16px largest */
+  line-height: 1.55rem;
+}
+.finance-table--font-3 .finance-table__header th {
+  font-size: 0.95rem;
+}
+.finance-table--font-3 .finance-table__body td {
+  font-size: 1rem;
+}
+
+/* Header vs Body Typographic Hierarchy (Requirement 13) */
+.finance-table__header th {
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--foreground);
+}
+
+.finance-table__body td {
+  font-weight: 400;
+  color: var(--foreground);
+}
+
+/* Monospace Plate Number (Requirement 14) */
+.finance-table__plate {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* Consistent Numeric Date Typography (Requirement 15) */
+.finance-table__date {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-variant-numeric: tabular-nums;
+  font-weight: 400;
+  white-space: nowrap;
+}
+
+/* Currency Typography */
+.finance-table__currency {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* Table Row Actions (Requirement 10 & 11) */
+.finance-table__actions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+}
+
+.finance-action-btn {
+  opacity: 0.5;
+  transition: opacity 0.15s ease, color 0.15s ease, background-color 0.15s ease;
+}
+
+.finance-action-btn:hover {
+  opacity: 1;
+}
+
+/* Placeholder Typography (Requirement 9) */
+.finance-table-container input::placeholder,
+.finance-table-container textarea::placeholder,
+.finance-placeholder::placeholder {
+  font-weight: 400 !important;
+  opacity: 0.55 !important;
+}
+
