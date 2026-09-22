@@ -4,7 +4,7 @@ import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/table";
-import { Badge } from "./ui/badge";
+import { Badge, getStatusBadgeClass } from "./ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "./ui/pagination";
 import { Plus, Search, Clock, CheckCircle, XCircle, AlertCircle, Truck, PackageOpen, Edit, Eye } from "lucide-react";
@@ -60,22 +60,7 @@ const generateTaskData = () => {
 
 const initialTaskData = generateTaskData();
 
-const getStatusColor = (status: string) => {
-  switch (status) {
-    case "Selesai":
-      return "bg-green-500/20 text-green-400 border-green-500/30";
-    case "Dalam Proses":
-      return "bg-blue-500/20 text-blue-400 border-blue-500/30";
-    case "Belum Diambil":
-      return "bg-amber-500/20 text-amber-400 border-amber-500/30";
-    case "Pending":
-      return "bg-orange-500/20 text-orange-400 border-orange-500/30";
-    case "Dibatalkan":
-      return "bg-red-500/20 text-red-400 border-red-500/30";
-    default:
-      return "bg-gray-500/20 text-gray-400 border-gray-500/30";
-  }
-};
+const getStatusColor = (status: string) => getStatusBadgeClass(status);
 
 const getStatusIcon = (status: string) => {
   switch (status) {
@@ -403,21 +388,15 @@ export function MessengerTask() {
                       <TableCell>{task.customer}</TableCell>
                       <TableCell>{task.jenisTugas}</TableCell>
                       <TableCell>
-                        <Badge className={cn(
-                          task.keteranganTugas === "Jemput Dokumen" && "bg-blue-500/20 text-blue-400 border-blue-500/30",
-                          task.keteranganTugas === "Proses Samsat" && "bg-blue-500/15 text-blue-500 border-purple-500/30",
-                          task.keteranganTugas === "Pengantaran Dokumen" && "bg-green-500/20 text-green-400 border-green-500/30"
-                        )}>
-                          <span className="flex items-center gap-1">
-                            <PackageOpen className="w-3 h-3" />
-                            {task.keteranganTugas}
-                          </span>
-                        </Badge>
+                        <span className="flex items-center gap-1">
+                          <PackageOpen className="w-3 h-3 text-muted-foreground" />
+                          {task.keteranganTugas}
+                        </span>
                       </TableCell>
                       <TableCell>{task.lokasi}</TableCell>
                       <TableCell>{task.tanggalTerima}</TableCell>
                       <TableCell>
-                        <Badge className={getStatusColor(task.status)}>
+                        <Badge status={task.status}>
                           <span className="flex items-center gap-1">
                             {getStatusIcon(task.status)}
                             {task.status}
@@ -523,7 +502,7 @@ export function MessengerTask() {
                 </div>
                 <div className="space-y-2">
                   <Label className="text-muted-foreground">Status</Label>
-                  <Badge className={getStatusColor(selectedTask.status)}>
+                  <Badge status={selectedTask.status}>
                     <span className="flex items-center gap-1">
                       {getStatusIcon(selectedTask.status)}
                       {selectedTask.status}
@@ -548,13 +527,7 @@ export function MessengerTask() {
                 </div>
                 <div className="space-y-2">
                   <Label className="text-muted-foreground">Keterangan Tugas</Label>
-                  <Badge className={cn(
-                    selectedTask.keteranganTugas === "Jemput Dokumen" && "bg-blue-500/20 text-blue-400 border-blue-500/30",
-                    selectedTask.keteranganTugas === "Proses Samsat" && "bg-blue-500/15 text-blue-500 border-purple-500/30",
-                    selectedTask.keteranganTugas === "Pengantaran Dokumen" && "bg-green-500/20 text-green-400 border-green-500/30"
-                  )}>
-                    {selectedTask.keteranganTugas}
-                  </Badge>
+                  <p>{selectedTask.keteranganTugas}</p>
                 </div>
               </div>
               <div className="space-y-2">

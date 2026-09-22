@@ -4,7 +4,7 @@ import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
-import { Badge } from "./ui/badge";
+import { Badge, getStatusBadgeClass } from "./ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "./ui/dialog";
@@ -139,28 +139,7 @@ const generateOrdersByStatus = () => {
 
 const initialOrdersByStatus = generateOrdersByStatus();
 
-const getStatusColor = (step: number) => {
-  switch (step) {
-    case 1:
-      return "bg-blue-500/20 text-blue-400 border-blue-500/30";
-    case 2:
-      return "bg-yellow-500/20 text-yellow-400 border-yellow-500/30";
-    case 3:
-      return "bg-indigo-500/20 text-indigo-400 border-indigo-500/30";
-    case 4:
-      return "bg-blue-500/15 text-blue-500 border-purple-500/30";
-    case 5:
-      return "bg-amber-500/20 text-amber-400 border-amber-500/30";
-    case 6:
-      return "bg-green-500/20 text-green-400 border-green-500/30";
-    case 7:
-      return "bg-orange-500/20 text-orange-400 border-orange-500/30";
-    case 8:
-      return "bg-cyan-500/20 text-cyan-400 border-cyan-500/30";
-    default:
-      return "bg-gray-500/20 text-gray-400 border-gray-500/30";
-  }
-};
+const getStatusColor = (step: number) => getStatusBadgeClass(step);
 
 interface OrderTrackingProps {
   userRole?: 'administrator' | 'finance' | 'admin' | 'messenger' | null;
@@ -771,7 +750,7 @@ export function OrderTracking({ userRole = 'administrator' }: OrderTrackingProps
                     <div className="flex items-center gap-2">
                       <Icon className="w-4 h-4" />
                       <span>{step.title}</span>
-                      <Badge className={cn("ml-auto", getStatusColor(step.id))}>
+                      <Badge status={step.id} className="ml-auto">
                         {ordersByStatus[step.title]?.length || 0}
                       </Badge>
                     </div>
@@ -809,7 +788,7 @@ export function OrderTracking({ userRole = 'administrator' }: OrderTrackingProps
                   )}>
                     {step.title}
                   </p>
-                  <Badge className={cn("mt-1", getStatusColor(step.id))}>
+                  <Badge status={step.id} className="mt-1">
                     {ordersByStatus[step.title]?.length || 0}
                   </Badge>
                 </div>
@@ -1219,7 +1198,7 @@ export function OrderTracking({ userRole = 'administrator' }: OrderTrackingProps
                         <TableCell className="font-mono whitespace-nowrap">{order.nopol}</TableCell>
                         <TableCell className="whitespace-nowrap">{order.layanan}</TableCell>
                         <TableCell className="whitespace-nowrap">
-                          <Badge className={getStatusColor(order.currentStep)}>
+                          <Badge status={order.currentStep}>
                             {trackingSteps[order.currentStep - 1].title}
                           </Badge>
                         </TableCell>
@@ -1306,7 +1285,7 @@ export function OrderTracking({ userRole = 'administrator' }: OrderTrackingProps
                           <TableCell className="font-mono whitespace-nowrap">{order.nopol}</TableCell>
                           <TableCell className="whitespace-nowrap">{order.layanan}</TableCell>
                           <TableCell className="whitespace-nowrap">
-                            <Badge className={getStatusColor(order.currentStep)}>
+                            <Badge status="warning">
                               Belum Dijadwal
                             </Badge>
                           </TableCell>
@@ -1387,7 +1366,7 @@ export function OrderTracking({ userRole = 'administrator' }: OrderTrackingProps
                           <TableCell className="whitespace-nowrap">{order.messenger}</TableCell>
                           <TableCell className="whitespace-nowrap">{order.tanggalJemput}</TableCell>
                           <TableCell className="whitespace-nowrap">
-                            <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
+                            <Badge status="success">
                               Terjadwal
                             </Badge>
                           </TableCell>
@@ -1482,11 +1461,7 @@ export function OrderTracking({ userRole = 'administrator' }: OrderTrackingProps
                         <TableCell className="whitespace-nowrap">{order.messenger}</TableCell>
                         <TableCell className="whitespace-nowrap">{order.tanggalJemput}</TableCell>
                         <TableCell className="whitespace-nowrap">
-                          <Badge className={cn(
-                            order.documentsVerified 
-                              ? "bg-green-500/20 text-green-400 border-green-500/30"
-                              : "bg-yellow-500/20 text-yellow-400 border-yellow-500/30"
-                          )}>
+                          <Badge status={order.documentsVerified ? "success" : "warning"}>
                             {order.documentsVerified ? "Terverifikasi" : "Belum Verifikasi"}
                           </Badge>
                         </TableCell>
@@ -1599,7 +1574,7 @@ export function OrderTracking({ userRole = 'administrator' }: OrderTrackingProps
                         <TableCell>{order.messenger}</TableCell>
                         <TableCell>{order.tanggalJemput}</TableCell>
                         <TableCell>
-                          <Badge className={getStatusColor(order.currentStep)}>
+                          <Badge status="info">
                             Dalam Proses
                           </Badge>
                         </TableCell>
@@ -1737,7 +1712,7 @@ export function OrderTracking({ userRole = 'administrator' }: OrderTrackingProps
                               --
                             </TableCell>
                             <TableCell>
-                              <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30">
+                              <Badge status="warning">
                                 Belum Verifikasi
                               </Badge>
                             </TableCell>
@@ -1883,11 +1858,11 @@ export function OrderTracking({ userRole = 'administrator' }: OrderTrackingProps
                           </TableCell>
                           <TableCell>
                             <div className="flex flex-col gap-1">
-                              <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
+                              <Badge status="success">
                                 Terverifikasi
                               </Badge>
                               {hasExceededItems && (
-                                <Badge className="bg-orange-500/20 text-orange-400 border-orange-500/30 flex items-center gap-1">
+                                <Badge status="warning" className="flex items-center gap-1">
                                   <AlertTriangle className="w-3 h-3" />
                                   Melebihi Harga Dasar
                                 </Badge>
@@ -2034,11 +2009,11 @@ export function OrderTracking({ userRole = 'administrator' }: OrderTrackingProps
                         <TableCell>{order.tanggalPengantaran || "--"}</TableCell>
                         <TableCell>
                           {order.isDeliveryScheduled ? (
-                            <Badge className="bg-cyan-500/20 text-cyan-400 border-cyan-500/30">
+                            <Badge status="info">
                               Terjadwal
                             </Badge>
                           ) : (
-                            <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30">
+                            <Badge status="warning">
                               Belum Dijadwalkan
                             </Badge>
                           )}
@@ -2140,7 +2115,7 @@ export function OrderTracking({ userRole = 'administrator' }: OrderTrackingProps
                   </div>
                   <div>
                     <p className="text-muted-foreground">Status</p>
-                    <Badge className={getStatusColor(selectedOrder.currentStep)}>
+                    <Badge status={selectedOrder.currentStep}>
                       {trackingSteps[selectedOrder.currentStep - 1].title}
                     </Badge>
                   </div>
@@ -3406,7 +3381,7 @@ export function OrderTracking({ userRole = 'administrator' }: OrderTrackingProps
                 <div className="flex items-center gap-3">
                   <div className="h-1 w-8 bg-gradient-to-r from-red-500 to-orange-500 rounded-full" />
                   <h4 className="text-red-400">Mutasi Keluar</h4>
-                  <Badge className="ml-auto bg-red-500/20 text-red-400 border-red-500/30">
+                  <Badge status="error" className="ml-auto">
                     {Object.values(samsatProgress.mutasiKeluar).filter(Boolean).length} / {Object.keys(samsatProgress.mutasiKeluar).length}
                   </Badge>
                 </div>
@@ -3483,7 +3458,7 @@ export function OrderTracking({ userRole = 'administrator' }: OrderTrackingProps
                 <div className="flex items-center gap-3">
                   <div className="h-1 w-8 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full" />
                   <h4 className="text-green-400">Mutasi Masuk</h4>
-                  <Badge className="ml-auto bg-green-500/20 text-green-400 border-green-500/30">
+                  <Badge status="success" className="ml-auto">
                     {Object.values(samsatProgress.mutasiMasuk).filter(Boolean).length} / {Object.keys(samsatProgress.mutasiMasuk).length}
                   </Badge>
                 </div>

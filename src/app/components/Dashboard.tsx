@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
-import { Badge } from "./ui/badge";
+import { Badge, getStatusBadgeClass } from "./ui/badge";
 import { Calendar } from "./ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { AreaChart, Area, BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
@@ -200,15 +200,7 @@ export function Dashboard() {
     }
   };
 
-  const getReminderColor = (type: string) => {
-    switch(type) {
-      case "payment": return "bg-red-500/15 text-red-500 border-red-500/25";
-      case "pickup": return "bg-blue-500/15 text-blue-500 border-blue-500/25";
-      case "delivery": return "bg-green-500/15 text-green-600 border-green-500/25";
-      case "salary": return "bg-blue-600/15 text-blue-600 border-blue-600/25";
-      default: return "bg-slate-500/15 text-slate-500 border-slate-500/25";
-    }
-  };
+  const getReminderColor = (type: string) => getStatusBadgeClass(type);
 
   const statsData = [
     {
@@ -479,7 +471,7 @@ export function Dashboard() {
                               </div>
                             )}
                           </div>
-                          <Badge className={`${getReminderColor(reminder.type)} text-[10px] md:text-xs whitespace-nowrap shrink-0`}>
+                          <Badge status={reminder.type}>
                             {reminder.type === "payment" && "Tagihan"}
                             {reminder.type === "pickup" && "Jemput"}
                             {reminder.type === "delivery" && "Antar"}

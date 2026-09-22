@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
-import { Badge } from "./ui/badge";
+import { Badge, getStatusBadgeClass } from "./ui/badge";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Checkbox } from "./ui/checkbox";
@@ -379,15 +379,7 @@ export function MessengerDocuments() {
     return labels[status] || status;
   };
 
-  const getStatusColor = (status: string) => {
-    const colors: Record<string, string> = {
-      "jemput-dokumen": "bg-blue-500/20 text-blue-400 border-blue-500/30",
-      "proses-samsat": "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
-      "ambil-dokumen": "bg-purple-500/20 text-purple-400 border-purple-500/30",
-      "antar-dokumen": "bg-green-500/20 text-green-400 border-green-500/30",
-    };
-    return colors[status] || "bg-gray-500/20 text-gray-400 border-gray-500/30";
-  };
+  const getStatusColor = (status: string) => getStatusBadgeClass(status);
 
   const filterTasksByStatus = (status: string) => {
     return tasks.filter((task) => task.status === status);
@@ -493,7 +485,7 @@ export function MessengerDocuments() {
                 <FileText className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
                 <span className="hidden sm:inline">Jemput Dokumen</span>
                 <span className="sm:hidden">Jemput</span>
-                <Badge className="ml-1 md:ml-2 bg-blue-500/20 text-blue-400 text-[10px] md:text-xs px-1 md:px-2">
+                <Badge status="jemput-dokumen" className="ml-1 md:ml-2">
                   {stats["jemput-dokumen"]}
                 </Badge>
               </TabsTrigger>
@@ -504,7 +496,7 @@ export function MessengerDocuments() {
                 <Clock className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
                 <span className="hidden sm:inline">Proses Samsat</span>
                 <span className="sm:hidden">Proses</span>
-                <Badge className="ml-1 md:ml-2 bg-yellow-500/20 text-yellow-400 text-[10px] md:text-xs px-1 md:px-2">
+                <Badge status="proses-samsat" className="ml-1 md:ml-2">
                   {stats["proses-samsat"]}
                 </Badge>
               </TabsTrigger>
@@ -515,7 +507,7 @@ export function MessengerDocuments() {
                 <PackageCheck className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
                 <span className="hidden sm:inline">Ambil Dokumen</span>
                 <span className="sm:hidden">Ambil</span>
-                <Badge className="ml-1 md:ml-2 bg-purple-500/20 text-purple-400 text-[10px] md:text-xs px-1 md:px-2">
+                <Badge status="ambil-dokumen" className="ml-1 md:ml-2">
                   {stats["ambil-dokumen"]}
                 </Badge>
               </TabsTrigger>
@@ -526,7 +518,7 @@ export function MessengerDocuments() {
                 <CheckCircle2 className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
                 <span className="hidden sm:inline">Antar Dokumen</span>
                 <span className="sm:hidden">Antar</span>
-                <Badge className="ml-1 md:ml-2 bg-green-500/20 text-green-400 text-[10px] md:text-xs px-1 md:px-2">
+                <Badge status="antar-dokumen" className="ml-1 md:ml-2">
                   {stats["antar-dokumen"]}
                 </Badge>
               </TabsTrigger>
@@ -578,7 +570,7 @@ export function MessengerDocuments() {
                       {selectedTask.layanan}
                     </p>
                   </div>
-                  <Badge className={cn("ml-auto", getStatusColor(selectedTask.status))}>
+                  <Badge status={selectedTask.status} className="ml-auto">
                     {getStatusLabel(selectedTask.status)}
                   </Badge>
                 </DialogTitle>

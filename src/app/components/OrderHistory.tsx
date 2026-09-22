@@ -3,7 +3,7 @@ import { motion } from "motion/react";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
-import { Badge } from "./ui/badge";
+import { Badge, getStatusBadgeClass } from "./ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "./ui/dialog";
@@ -141,18 +141,7 @@ export function OrderHistory() {
 
   const filteredOrders = getFilteredOrders();
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Lunas":
-        return "bg-green-500/20 text-green-400 border-green-500/30";
-      case "Belum Lunas":
-        return "bg-red-500/20 text-red-400 border-red-500/30";
-      case "Kurang":
-        return "bg-yellow-500/20 text-yellow-400 border-yellow-500/30";
-      default:
-        return "bg-gray-500/20 text-gray-400 border-gray-500/30";
-    }
-  };
+  const getStatusColor = (status: string) => getStatusBadgeClass(status);
 
   const handleExportCSV = () => {
     toast.success("Data berhasil diekspor ke CSV!");
@@ -310,7 +299,7 @@ export function OrderHistory() {
                       Rp {order.kurang.toLocaleString('id-ID')}
                     </TableCell>
                     <TableCell>
-                      <Badge className={getStatusColor(order.statusPembayaran)}>
+                      <Badge status={order.statusPembayaran}>
                         {order.statusPembayaran}
                       </Badge>
                     </TableCell>
@@ -417,7 +406,7 @@ export function OrderHistory() {
                   </div>
                   <div className="flex justify-between border-t border-border pt-2">
                     <span>Status Pembayaran</span>
-                    <Badge className={getStatusColor(selectedOrder.statusPembayaran)}>
+                    <Badge status={selectedOrder.statusPembayaran}>
                       {selectedOrder.statusPembayaran}
                     </Badge>
                   </div>

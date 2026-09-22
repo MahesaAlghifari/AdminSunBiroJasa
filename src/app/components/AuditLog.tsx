@@ -63,24 +63,11 @@ export function AuditLog({ currentUserRole }: AuditLogProps) {
   const paginatedLogs = filteredLogs.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
   const getRoleBadge = (role: string) => {
-    const colors: any = {
-      "administrator": "bg-blue-500/15 text-blue-500 border-purple-500/30",
-      "finance": "bg-green-500/20 text-green-400 border-green-500/30",
-      "admin": "bg-blue-500/20 text-blue-400 border-blue-500/30",
-      "messenger": "bg-orange-500/20 text-orange-400 border-orange-500/30",
-    };
-    return <Badge className={colors[role] || ""}>{role.toUpperCase()}</Badge>;
+    return <Badge status="role">{role}</Badge>;
   };
 
   const getActionBadge = (action: string) => {
-    const colors: any = {
-      "CREATE": "bg-green-500/20 text-green-400 border-green-500/30",
-      "UPDATE": "bg-blue-500/20 text-blue-400 border-blue-500/30",
-      "DELETE": "bg-red-500/20 text-red-400 border-red-500/30",
-      "EXPORT": "bg-blue-500/15 text-blue-500 border-purple-500/30",
-      "VIEW": "bg-cyan-500/20 text-cyan-400 border-cyan-500/30",
-    };
-    return <Badge className={colors[action] || ""}>{action}</Badge>;
+    return <span className="text-sm font-medium">{action}</span>;
   };
 
   const handleExportCSV = () => {
@@ -164,10 +151,10 @@ export function AuditLog({ currentUserRole }: AuditLogProps) {
             }}
           >
             <SelectTrigger className="bg-input-background border-border">
-              <SelectValue placeholder="Semua Role" />
+              <SelectValue placeholder="Semua Jabatan" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Semua Role</SelectItem>
+              <SelectItem value="all">Semua Jabatan</SelectItem>
               <SelectItem value="administrator">Administrator</SelectItem>
               <SelectItem value="finance">Finance</SelectItem>
               <SelectItem value="admin">Admin</SelectItem>
@@ -210,7 +197,7 @@ export function AuditLog({ currentUserRole }: AuditLogProps) {
               <TableRow>
                 <TableHead>Waktu</TableHead>
                 <TableHead>Pengguna</TableHead>
-                <TableHead>Role</TableHead>
+                <TableHead>Jabatan</TableHead>
                 <TableHead>Aksi</TableHead>
                 <TableHead>Modul</TableHead>
                 <TableHead>Detail</TableHead>
@@ -334,7 +321,7 @@ export function AuditLog({ currentUserRole }: AuditLogProps) {
                   <p className="text-sm">{selectedLog.userName}</p>
                 </div>
                 <div>
-                  <Label className="text-xs text-muted-foreground">Role</Label>
+                  <Label className="text-xs text-muted-foreground">Jabatan</Label>
                   <div className="mt-1">{getRoleBadge(selectedLog.userRole)}</div>
                 </div>
                 <div>

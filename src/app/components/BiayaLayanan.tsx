@@ -3,7 +3,6 @@ import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/table";
-import { Badge } from "./ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "./ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "./ui/alert-dialog";
 import { Label } from "./ui/label";
@@ -327,9 +326,7 @@ export function BiayaLayanan() {
         <TableRow key={item.id} className="hover:bg-secondary/20 transition-colors">
           <TableCell className="w-16">{startIndex + index + 1}</TableCell>
           <TableCell>
-            <Badge variant="outline" className="bg-blue-500/10">
-              {item.wilayah}
-            </Badge>
+            {item.wilayah}
           </TableCell>
           <TableCell className="text-green-400">
             Rp {item.biayaJasaLengkap?.toLocaleString()}
@@ -368,9 +365,7 @@ export function BiayaLayanan() {
       <TableRow key={item.id} className="hover:bg-secondary/20 transition-colors">
         <TableCell className="w-16">{startIndex + index + 1}</TableCell>
         <TableCell>
-          <Badge variant="outline" className="bg-blue-500/10">
-            {item.wilayah}
-          </Badge>
+          {item.wilayah}
         </TableCell>
         <TableCell className="text-green-400">
           Rp {item.biayaJasa?.toLocaleString()}

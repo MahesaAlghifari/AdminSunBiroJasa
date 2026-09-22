@@ -364,7 +364,7 @@ export function Order() {
                       <CheckCircle className="w-8 h-8 text-green-400" />
                       <div>
                         <p className="text-xs text-muted-foreground">Status</p>
-                        <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
+                        <Badge status={selectedOrder.status}>
                           {selectedOrder.status}
                         </Badge>
                       </div>

@@ -123,18 +123,7 @@ export function EnhancedTableWithDialogs({
     
     // Format status badges
     if (key.toLowerCase().includes("status") || key.toLowerCase().includes("jenis")) {
-      let colorClass = "bg-gray-500/20 text-gray-400 border-gray-500/30";
-      const val = String(value).toLowerCase();
-      
-      if (val.includes("selesai") || val.includes("sukses") || val === "debit" || val.includes("lunas")) {
-        colorClass = "bg-green-500/20 text-green-400 border-green-500/30";
-      } else if (val.includes("proses") || val.includes("pending") || val.includes("belum")) {
-        colorClass = "bg-amber-500/20 text-amber-400 border-amber-500/30";
-      } else if (val.includes("gagal") || val.includes("batal") || val === "kredit" || val.includes("kurang")) {
-        colorClass = "bg-red-500/20 text-red-400 border-red-500/30";
-      }
-      
-      return <Badge className={colorClass}>{value}</Badge>;
+      return <Badge status={value}>{value}</Badge>;
     }
     
     return value;

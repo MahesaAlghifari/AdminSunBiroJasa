@@ -89,7 +89,7 @@ export function Profile({ userRole = 'admin' }: ProfileProps) {
               {/* Name & Position */}
               <h3 className="text-xl mb-1">{profileData.name}</h3>
               <p className="text-sm text-muted-foreground mb-3">{profileData.position}</p>
-              <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30 mb-4">
+              <Badge status={userRole === 'messenger' ? 'messenger' : 'administrator'} className="mb-4">
                 {userRole === 'messenger' ? 'Messenger' : 'Administrator'}
               </Badge>
 

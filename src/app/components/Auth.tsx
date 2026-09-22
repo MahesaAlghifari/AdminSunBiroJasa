@@ -216,40 +216,40 @@ export function Auth({ onLogin }: AuthProps) {
                 <div className="grid grid-cols-2 gap-2">
                   <div className="p-2.5 border border-border rounded-lg bg-secondary/30">
                     <div className="flex items-center gap-1.5 mb-1.5">
-                      <div className="w-6 h-6 rounded-md bg-blue-500/15 flex items-center justify-center">
-                        <User className="w-3.5 h-3.5 text-blue-500" />
+                      <div className="w-6 h-6 rounded-md bg-secondary flex items-center justify-center">
+                        <User className="w-3.5 h-3.5 text-muted-foreground" />
                       </div>
-                      <Badge className="bg-blue-500/15 text-blue-600 border-blue-500/25 text-[10px] px-1.5">Admin (SVP)</Badge>
+                      <Badge status="role">Admin (SVP)</Badge>
                     </div>
                     <p className="text-[11px] text-muted-foreground truncate">{credentials.administrator.email}</p>
                     <p className="text-[11px] text-muted-foreground">{credentials.administrator.password}</p>
                   </div>
                   <div className="p-2.5 border border-border rounded-lg bg-secondary/30">
                     <div className="flex items-center gap-1.5 mb-1.5">
-                      <div className="w-6 h-6 rounded-md bg-green-500/15 flex items-center justify-center">
-                        <User className="w-3.5 h-3.5 text-green-600" />
+                      <div className="w-6 h-6 rounded-md bg-secondary flex items-center justify-center">
+                        <User className="w-3.5 h-3.5 text-muted-foreground" />
                       </div>
-                      <Badge className="bg-green-500/15 text-green-700 border-green-500/25 text-[10px] px-1.5">Finance</Badge>
+                      <Badge status="role">Finance</Badge>
                     </div>
                     <p className="text-[11px] text-muted-foreground truncate">{credentials.finance.email}</p>
                     <p className="text-[11px] text-muted-foreground">{credentials.finance.password}</p>
                   </div>
                   <div className="p-2.5 border border-border rounded-lg bg-secondary/30">
                     <div className="flex items-center gap-1.5 mb-1.5">
-                      <div className="w-6 h-6 rounded-md bg-blue-500/15 flex items-center justify-center">
-                        <User className="w-3.5 h-3.5 text-blue-500" />
+                      <div className="w-6 h-6 rounded-md bg-secondary flex items-center justify-center">
+                        <User className="w-3.5 h-3.5 text-muted-foreground" />
                       </div>
-                      <Badge className="bg-blue-500/15 text-blue-600 border-blue-500/25 text-[10px] px-1.5">Admin</Badge>
+                      <Badge status="role">Admin</Badge>
                     </div>
                     <p className="text-[11px] text-muted-foreground truncate">{credentials.admin.email}</p>
                     <p className="text-[11px] text-muted-foreground">{credentials.admin.password}</p>
                   </div>
                   <div className="p-2.5 border border-border rounded-lg bg-secondary/30">
                     <div className="flex items-center gap-1.5 mb-1.5">
-                      <div className="w-6 h-6 rounded-md bg-cyan-500/15 flex items-center justify-center">
-                        <Truck className="w-3.5 h-3.5 text-cyan-600" />
+                      <div className="w-6 h-6 rounded-md bg-secondary flex items-center justify-center">
+                        <Truck className="w-3.5 h-3.5 text-muted-foreground" />
                       </div>
-                      <Badge className="bg-cyan-500/15 text-cyan-700 border-cyan-500/25 text-[10px] px-1.5">Messenger</Badge>
+                      <Badge status="role">Messenger</Badge>
                     </div>
                     <p className="text-[11px] text-muted-foreground truncate">{credentials.messenger.email}</p>
                     <p className="text-[11px] text-muted-foreground">{credentials.messenger.password}</p>

@@ -1,6 +1,6 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Card } from "./ui/card";
-import { Badge } from "./ui/badge";
+import { Badge, getStatusBadgeClass } from "./ui/badge";
 import { Button } from "./ui/button";
 import { ScrollArea } from "./ui/scroll-area";
 import { Separator } from "./ui/separator";
@@ -30,18 +30,7 @@ interface NotificationDialogProps {
 }
 
 export function NotificationDialog({ open, onOpenChange, notifications }: NotificationDialogProps) {
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case "high":
-        return "bg-red-500/20 text-red-400 border-red-500/30";
-      case "medium":
-        return "bg-amber-500/20 text-amber-400 border-amber-500/30";
-      case "low":
-        return "bg-blue-500/20 text-blue-400 border-blue-500/30";
-      default:
-        return "bg-gray-500/20 text-gray-400 border-gray-500/30";
-    }
-  };
+  const getPriorityColor = (priority: string) => getStatusBadgeClass(priority);
 
   const getPriorityLabel = (priority: string) => {
     switch (priority) {
@@ -106,7 +95,7 @@ export function NotificationDialog({ open, onOpenChange, notifications }: Notifi
                       <div>
                         <div className="flex items-center gap-2 mb-1">
                           <h4 className="text-sm">{notif.title}</h4>
-                          <Badge className={getPriorityColor(notif.priority)}>
+                          <Badge status={notif.priority}>
                             {getPriorityLabel(notif.priority)}
                           </Badge>
                         </div>

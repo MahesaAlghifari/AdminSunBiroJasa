@@ -66,13 +66,6 @@ export function RiwayatAudit() {
   const paginatedLogs = filteredLogs.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
   const getRoleBadge = (role: string) => {
-    const colors: any = {
-      administrator: "bg-blue-500/15 text-blue-500 border-purple-500/30",
-      finance: "bg-green-500/20 text-green-400 border-green-500/30",
-      admin: "bg-blue-500/20 text-blue-400 border-blue-500/30",
-      messenger: "bg-cyan-500/20 text-cyan-400 border-cyan-500/30",
-    };
-    
     const icons: any = {
       administrator: Shield,
       finance: Wallet,
@@ -83,22 +76,15 @@ export function RiwayatAudit() {
     const Icon = icons[role] || User;
     
     return (
-      <Badge className={colors[role] || ""}>
+      <Badge status="role">
         <Icon className="w-3 h-3 mr-1" />
-        {role.toUpperCase()}
+        {role}
       </Badge>
     );
   };
 
   const getActionBadge = (action: string) => {
-    const colors: any = {
-      CREATE: "bg-green-500/20 text-green-400 border-green-500/30",
-      UPDATE: "bg-blue-500/20 text-blue-400 border-blue-500/30",
-      DELETE: "bg-red-500/20 text-red-400 border-red-500/30",
-      EXPORT: "bg-blue-500/15 text-blue-500 border-purple-500/30",
-      VIEW: "bg-cyan-500/20 text-cyan-400 border-cyan-500/30",
-    };
-    return <Badge className={colors[action] || ""}>{action}</Badge>;
+    return <span className="text-sm font-medium">{action}</span>;
   };
 
   const handleExportCSV = () => {
@@ -147,10 +133,10 @@ export function RiwayatAudit() {
             setCurrentPage(1);
           }}>
             <SelectTrigger className="w-[160px] bg-input-background border-border">
-              <SelectValue placeholder="Semua Role" />
+              <SelectValue placeholder="Semua Jabatan" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Semua Role</SelectItem>
+              <SelectItem value="all">Semua Jabatan</SelectItem>
               <SelectItem value="administrator">Administrator</SelectItem>
               <SelectItem value="finance">Finance</SelectItem>
               <SelectItem value="admin">Admin</SelectItem>
@@ -264,7 +250,7 @@ export function RiwayatAudit() {
               <TableRow>
                 <TableHead>Waktu</TableHead>
                 <TableHead>Pengguna</TableHead>
-                <TableHead>Role</TableHead>
+                <TableHead>Jabatan</TableHead>
                 <TableHead>Aksi</TableHead>
                 <TableHead>Modul</TableHead>
                 <TableHead>Detail</TableHead>
@@ -397,7 +383,7 @@ export function RiwayatAudit() {
                   <p className="text-sm">{selectedLog.userName}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Role</p>
+                  <p className="text-sm text-muted-foreground">Jabatan</p>
                   {getRoleBadge(selectedLog.userRole)}
                 </div>
                 <div>

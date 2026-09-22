@@ -1,7 +1,8 @@
 /* Central design system tokens */
 :root {
-  --font-family-base: "Quick Sans", "Quicksand", Inter, Arial, sans-serif;
-  --font-family-heading: "Quick Sans", "Quicksand", Inter, Arial, sans-serif;
+  --font-family-sans: "Quick Sans", sans-serif;
+  --font-family-base: var(--font-family-sans);
+  --font-family-heading: var(--font-family-sans);
 
   --font-size-page-title: 2rem;
   --font-size-section-title: 1.25rem;

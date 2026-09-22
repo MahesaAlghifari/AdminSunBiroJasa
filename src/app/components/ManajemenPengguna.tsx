@@ -225,21 +225,11 @@ export function ManajemenPengguna() {
   };
 
   const getStatusBadge = (status: string) => {
-    if (status === "Aktif") {
-      return <Badge className="bg-green-500/20 text-green-400 border-green-500/30">Aktif</Badge>;
-    }
-    return <Badge className="bg-red-500/20 text-red-400 border-red-500/30">Nonaktif</Badge>;
+    return <Badge status={status}>{status}</Badge>;
   };
 
   const getJabatanBadge = (jabatan: string) => {
-    const colors: any = {
-      "ADMIN": "bg-blue-500/20 text-blue-400 border-blue-500/30",
-      "SVP": "bg-blue-500/15 text-blue-500 border-purple-500/30",
-      "FINANCE": "bg-green-500/20 text-green-400 border-green-500/30",
-      "CLILEN": "bg-cyan-500/20 text-cyan-400 border-cyan-500/30",
-      "MESSENGER": "bg-orange-500/20 text-orange-400 border-orange-500/30",
-    };
-    return <Badge className={colors[jabatan] || ""}>{jabatan}</Badge>;
+    return <Badge status={jabatan}>{jabatan}</Badge>;
   };
 
   return (

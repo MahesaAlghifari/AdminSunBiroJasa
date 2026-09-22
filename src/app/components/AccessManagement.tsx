@@ -212,11 +212,7 @@ export function AccessManagement({ currentUserId, currentUserName }: AccessManag
   };
 
   const getRoleBadge = (role: string) => {
-    const colors: any = {
-      "finance": "bg-green-500/20 text-green-400 border-green-500/30",
-      "admin": "bg-blue-500/20 text-blue-400 border-blue-500/30",
-    };
-    return <Badge className={colors[role] || ""}>{role.toUpperCase()}</Badge>;
+    return <Badge status={role}>{role.toUpperCase()}</Badge>;
   };
 
   const permissionLabels: Record<keyof UserAccess['permissions'], string> = {
@@ -330,7 +326,7 @@ export function AccessManagement({ currentUserId, currentUserName }: AccessManag
                 {Object.entries(user.permissions)
                   .filter(([_, value]) => value)
                   .map(([key]) => (
-                    <Badge key={key} variant="outline" className="text-xs">
+                    <Badge key={key} variant="outline">
                       {permissionLabels[key as keyof UserAccess['permissions']]}
                     </Badge>
                   ))}
