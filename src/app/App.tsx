@@ -233,6 +233,54 @@ function AppContent() {
     }
   };
 
+  const getFinanceHeaderInfo = (page: string) => {
+    const subTab = page.replace("finance-", "").toLowerCase();
+    switch (subTab) {
+      case "profit":
+      case "finance":
+        return {
+          title: "Profit",
+          description: "Pantau margin keuntungan dan rincian transaksi per berkas"
+        };
+      case "kas-kantor":
+        return {
+          title: "Kas Kantor",
+          description: "Kelola transaksi kas kantor"
+        };
+      case "kas-messenger":
+        return {
+          title: "Kas Messenger",
+          description: "Kelola pencatatan kas petty cash dan operasional messenger"
+        };
+      case "pengeluaran":
+        return {
+          title: "Pengeluaran",
+          description: "Catat dan monitor seluruh pos pengeluaran operasional kantor"
+        };
+      case "penjualan":
+      case "data-penjualan":
+        return {
+          title: "Data Penjualan",
+          description: "Kelola dan pantau data penjualan berkas"
+        };
+      case "tagihan":
+        return {
+          title: "Tagihan",
+          description: "Monitoring status pelunasan dan piutang tagihan berkas"
+        };
+      case "laba-rugi":
+        return {
+          title: "Laba Rugi",
+          description: "Analisis performa keuangan, total pendapatan, dan laba bersih"
+        };
+      default:
+        return {
+          title: "Profit",
+          description: "Pantau margin keuntungan dan rincian transaksi per berkas"
+        };
+    }
+  };
+
   const getPageTitle = () => {
     // Find in main menu
     for (const item of menuItems) {
@@ -370,12 +418,12 @@ function AppContent() {
               <Menu className="w-4 h-4" />
             </Button>
             <div>
-              <h2 className="text-sm md:text-base leading-tight">
-                {currentPage.startsWith("finance") ? "Finance" : getPageTitle()}
+              <h2 className="text-sm md:text-base leading-tight font-semibold text-foreground">
+                {currentPage.startsWith("finance") ? getFinanceHeaderInfo(currentPage).title : getPageTitle()}
               </h2>
               <p className="text-[11px] text-muted-foreground hidden sm:block">
                 {currentPage.startsWith("finance")
-                  ? "Kelola keuangan dan profit bisnis Anda"
+                  ? getFinanceHeaderInfo(currentPage).description
                   : `Kelola ${getPageTitle().toLowerCase()} Anda`}
               </p>
             </div>

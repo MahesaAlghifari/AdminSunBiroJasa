@@ -70,19 +70,13 @@ export function FinanceContent({ tab }: FinanceContentProps) {
   const [cashbackPendingData, setCashbackPendingData] = useState(initialCashbackPendingData);
   const [tagihanData, setTagihanData] = useState(initialTagihanData);
 
-  // Sub-tab Header Level 2 renderer with Breadcrumb (Requirement 2 & 3)
-  const renderSubTabHeader = (title: string, description: string) => (
-    <div className="space-y-1.5 pb-3 border-b border-border/70">
-      <nav className="text-xs text-muted-foreground flex items-center gap-1.5" aria-label="Breadcrumb">
-        <span>Finance</span>
-        <span>/</span>
-        <span className="text-foreground font-medium">{title}</span>
-      </nav>
-      <div>
-        <h2 className="text-lg font-semibold tracking-tight text-foreground">{title}</h2>
-        <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">{description}</p>
-      </div>
-    </div>
+  // Sub-tab Breadcrumb renderer (Requirements 1, 2, 3: Global header displays title, no duplication in content)
+  const renderSubTabHeader = (title: string, _description?: string) => (
+    <nav className="text-xs text-muted-foreground flex items-center gap-1.5 pb-2" aria-label="Breadcrumb">
+      <span>Finance</span>
+      <span>/</span>
+      <span className="text-foreground font-medium">{title}</span>
+    </nav>
   );
 
   // If viewing detail, show the detail page (Requirement 18 & 19)
@@ -133,13 +127,13 @@ export function FinanceContent({ tab }: FinanceContentProps) {
     ];
 
     return (
-      <div className="space-y-6">
+      <div className="space-y-4">
         {renderSubTabHeader("Profit", "Pantau margin keuntungan dan rincian transaksi per berkas")}
 
         {/* Level 3: Table Card */}
         <Card className="p-4 sm:p-5 border border-border bg-card shadow-xs">
           <div className="mb-4">
-            <h3 className="text-base font-semibold text-foreground">Daftar transaksi profit</h3>
+            <h3 className="text-base md:text-[17px] font-semibold tracking-tight text-foreground">Daftar transaksi profit</h3>
             <p className="text-xs text-muted-foreground mt-0.5">Seluruh rekapitulasi data penjualan dan kalkulasi keuntungan samsat</p>
           </div>
           <EnhancedTableWithDialogs
@@ -265,13 +259,13 @@ export function FinanceContent({ tab }: FinanceContentProps) {
     }
 
     return (
-      <div className="space-y-6">
-        {renderSubTabHeader("Kas messenger", "Kelola pencatatan kas petty cash dan operasional messenger")}
+      <div className="space-y-4">
+        {renderSubTabHeader("Kas Messenger", "Kelola pencatatan kas petty cash dan operasional messenger")}
 
         {/* Level 3: Table */}
         <Card className="p-4 sm:p-5 border border-border bg-card shadow-xs">
           <div className="mb-4">
-            <h3 className="text-base font-semibold text-foreground">Buku kas harian messenger</h3>
+            <h3 className="text-base md:text-[17px] font-semibold tracking-tight text-foreground">Buku kas harian messenger</h3>
             <p className="text-xs text-muted-foreground mt-0.5">Riwayat lengkap mutasi kas masuk dan keluar kurir/messenger di lapangan</p>
           </div>
           <EnhancedTableWithDialogs
@@ -400,13 +394,13 @@ export function FinanceContent({ tab }: FinanceContentProps) {
     }
 
     return (
-      <div className="space-y-6">
-        {renderSubTabHeader("Kas kantor", "Rekapitulasi arus kas masuk debit dan kas keluar kredit kantor")}
+      <div className="space-y-4">
+        {renderSubTabHeader("Kas Kantor", "Kelola transaksi kas kantor")}
 
         {/* Level 3: Table */}
         <Card className="p-4 sm:p-5 border border-border bg-card shadow-xs">
           <div className="mb-4">
-            <h3 className="text-base font-semibold text-foreground">Buku kas besar kantor</h3>
+            <h3 className="text-base md:text-[17px] font-semibold tracking-tight text-foreground">Buku kas besar kantor</h3>
             <p className="text-xs text-muted-foreground mt-0.5">Jurnal pencatatan mutasi kas bank dan kas tunai perusahaan</p>
           </div>
           <EnhancedTableWithDialogs
@@ -519,13 +513,13 @@ export function FinanceContent({ tab }: FinanceContentProps) {
     }
 
     return (
-      <div className="space-y-6">
+      <div className="space-y-4">
         {renderSubTabHeader("Pengeluaran", "Catat dan monitor seluruh pos pengeluaran operasional kantor")}
 
         {/* Level 3: Table */}
         <Card className="p-4 sm:p-5 border border-border bg-card shadow-xs">
           <div className="mb-4">
-            <h3 className="text-base font-semibold text-foreground">Daftar beban operasional</h3>
+            <h3 className="text-base md:text-[17px] font-semibold tracking-tight text-foreground">Daftar beban operasional</h3>
             <p className="text-xs text-muted-foreground mt-0.5">Pencatatan rincian biaya tetap dan variabel operasional kantor</p>
           </div>
           <EnhancedTableWithDialogs
@@ -585,8 +579,8 @@ export function FinanceContent({ tab }: FinanceContentProps) {
   // ==========================================
   if (tab === "penjualan") {
     return (
-      <div className="space-y-6">
-        {renderSubTabHeader("Data penjualan", "Daftar berkas pengurusan mutasi, balik nama, dan pajak kendaraan")}
+      <div className="space-y-4">
+        {renderSubTabHeader("Data Penjualan", "Kelola dan pantau data penjualan berkas")}
         <DataPenjualan />
       </div>
     );
@@ -613,8 +607,13 @@ export function FinanceContent({ tab }: FinanceContentProps) {
       { key: "status", label: "Status tagihan", type: "select", options: ["Lunas", "Belum Lunas", "Belum Bayar"] },
     ];
 
-    const tagihanBelumLunas = tagihanData.filter(d => d.status !== "Lunas");
-    const tagihanLunas = tagihanData.filter(d => d.status === "Lunas");
+    const normalizedTagihanData = tagihanData.map(item => ({
+      ...item,
+      status: item.status === "Lunas" ? "Lunas" : "Belum lunas",
+    }));
+
+    const tagihanBelumLunas = normalizedTagihanData.filter(d => d.status === "Belum lunas");
+    const tagihanLunas = normalizedTagihanData.filter(d => d.status === "Lunas");
 
     const totalPiutang = tagihanBelumLunas.reduce((acc, item) => acc + item.sisa, 0);
     const totalTerbayar = tagihanLunas.reduce((acc, item) => acc + item.totalTagihan, 0);
@@ -627,6 +626,7 @@ export function FinanceContent({ tab }: FinanceContentProps) {
         totalTagihan: parseInt(row.totalTagihan) || 0,
         terbayar: parseInt(row.terbayar) || 0,
         sisa: parseInt(row.sisa) || 0,
+        status: row.status === "Lunas" ? "Lunas" : "Belum lunas",
       }));
       setTagihanData([...tagihanData, ...newItems]);
       setIsAdding(false);
@@ -645,7 +645,7 @@ export function FinanceContent({ tab }: FinanceContentProps) {
       );
     }
 
-    const tagihanBelumLunasColumns = [
+    const tagihanColumns: Column[] = [
       { key: "tanggal", label: "Tanggal", filterable: true, filterType: "text" as const },
       { key: "customer", label: "Customer", filterable: true, filterType: "text" as const },
       { key: "nopol", label: "Plat nomor", filterable: true, filterType: "text" as const },
@@ -654,69 +654,42 @@ export function FinanceContent({ tab }: FinanceContentProps) {
       { key: "terbayar", label: "Terbayar" },
       { key: "sisa", label: "Sisa piutang" },
       { key: "jatuhTempo", label: "Jatuh tempo" },
-      { key: "status", label: "Status" },
-    ];
-
-    const tagihanLunasColumns = [
-      { key: "tanggal", label: "Tanggal", filterable: true, filterType: "text" as const },
-      { key: "customer", label: "Customer", filterable: true, filterType: "text" as const },
-      { key: "nopol", label: "Plat nomor", filterable: true, filterType: "text" as const },
-      { key: "jenisLayanan", label: "Layanan" },
-      { key: "totalTagihan", label: "Total tagihan" },
-      { key: "terbayar", label: "Terbayar" },
-      { key: "jatuhTempo", label: "Tanggal lunas" },
-      { key: "status", label: "Status" },
+      { 
+        key: "status", 
+        label: "Status", 
+        filterable: true, 
+        filterType: "select" as const, 
+        filterOptions: ["Semua", "Lunas", "Belum lunas"] 
+      },
     ];
 
     return (
-      <div className="space-y-6">
-        {renderSubTabHeader("Tagihan", "Monitoring status piutang, tagihan lunas, dan jatuh tempo")}
+      <div className="space-y-4">
+        {renderSubTabHeader("Tagihan", "Monitoring status pelunasan dan piutang tagihan berkas")}
 
-        {/* Level 3: Table 1 - Tagihan Belum Lunas */}
+        {/* Level 3: Merged Single Table (Requirement 8) */}
         <Card className="p-4 sm:p-5 border border-border bg-card shadow-xs">
           <div className="mb-4">
-            <h3 className="text-base font-semibold text-foreground">Tagihan belum lunas</h3>
-            <p className="text-xs text-muted-foreground mt-0.5">Daftar invoice aktif yang masih memiliki sisa pembayaran atau belum diselesaikan</p>
+            <h3 className="text-base md:text-[17px] font-semibold tracking-tight text-foreground">Daftar tagihan</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">Monitoring status pelunasan, sisa piutang, dan invoice tagihan berkas</p>
           </div>
           <EnhancedTableWithDialogs
-            columns={tagihanBelumLunasColumns}
-            data={tagihanBelumLunas}
+            columns={tagihanColumns}
+            data={normalizedTagihanData}
             onAdd={() => setIsAdding(true)}
-            onView={(item) => setViewingItem({ item, subTabTitle: "Tagihan belum lunas", columns: tagihanBelumLunasColumns })}
+            onView={(item) => setViewingItem({ item, subTabTitle: "Tagihan", columns: tagihanColumns })}
             onEdit={(item, updated) => {
               setTagihanData(tagihanData.map(d => d.id === item.id ? { ...d, ...updated } : d));
             }}
             onDelete={(item) => {
               setTagihanData(tagihanData.filter(d => d.id !== item.id));
             }}
-            searchPlaceholder="Cari customer, nopol tagihan..."
+            searchPlaceholder="Cari customer, nopol, atau layanan tagihan..."
             editFields={tagihanFields}
           />
         </Card>
 
-        {/* Level 3: Table 2 - Tagihan Lunas */}
-        <Card className="p-4 sm:p-5 border border-border bg-card shadow-xs">
-          <div className="mb-4">
-            <h3 className="text-base font-semibold text-foreground">Tagihan lunas</h3>
-            <p className="text-xs text-muted-foreground mt-0.5">Arsip seluruh transaksi tagihan invoice yang telah terbayar lunas 100%</p>
-          </div>
-          <EnhancedTableWithDialogs
-            columns={tagihanLunasColumns}
-            data={tagihanLunas}
-            onView={(item) => setViewingItem({ item, subTabTitle: "Tagihan lunas", columns: tagihanLunasColumns })}
-            onEdit={(item, updated) => {
-              setTagihanData(tagihanData.map(d => d.id === item.id ? { ...d, ...updated } : d));
-            }}
-            onDelete={(item) => {
-              setTagihanData(tagihanData.filter(d => d.id !== item.id));
-            }}
-            searchPlaceholder="Cari riwayat tagihan lunas..."
-            hideAddButton={true}
-            editFields={tagihanFields}
-          />
-        </Card>
-
-        {/* Level 3: Summary Cards (Requirement 4: MOVED BELOW TABLES) */}
+        {/* Level 3: Summary Cards (Requirement 8: MOVED BELOW TABLE) */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Card className="p-4 border border-border bg-card shadow-2xs">
             <div className="flex items-center justify-between">
@@ -888,40 +861,34 @@ export function FinanceContent({ tab }: FinanceContentProps) {
     ];
 
     return (
-      <div className="space-y-6">
-        {/* Header Level 2 with Breadcrumb & Period Selector (Requirement 2, 3, 13: Export removed) */}
-        <div className="space-y-1.5 pb-3 border-b border-border/70">
+      <div className="space-y-4">
+        {/* Breadcrumb & Period Selector (Requirements 1, 2, 3: Header is in App.tsx) */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2">
           <nav className="text-xs text-muted-foreground flex items-center gap-1.5" aria-label="Breadcrumb">
             <span>Finance</span>
             <span>/</span>
-            <span className="text-foreground font-medium">Laba rugi</span>
+            <span className="text-foreground font-medium">Laba Rugi</span>
           </nav>
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div>
-              <h2 className="text-lg font-semibold tracking-tight text-foreground">Laba rugi</h2>
-              <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">Analisis performa keuangan, total pendapatan, dan laba bersih</p>
-            </div>
 
-            <div className="flex items-center gap-2 self-start sm:self-auto">
-              <Select value={filterPeriod} onValueChange={setFilterPeriod}>
-                <SelectTrigger className="w-[140px] bg-background border-border h-9 text-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="daily" className="text-xs">Harian</SelectItem>
-                  <SelectItem value="weekly" className="text-xs">Mingguan</SelectItem>
-                  <SelectItem value="monthly" className="text-xs">Bulanan</SelectItem>
-                  <SelectItem value="yearly" className="text-xs">Tahunan</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          <div className="flex items-center gap-2 self-start sm:self-auto">
+            <Select value={filterPeriod} onValueChange={setFilterPeriod}>
+              <SelectTrigger className="w-[130px] bg-background border-border h-8 text-xs font-normal">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="daily" className="text-xs">Harian</SelectItem>
+                <SelectItem value="weekly" className="text-xs">Mingguan</SelectItem>
+                <SelectItem value="monthly" className="text-xs">Bulanan</SelectItem>
+                <SelectItem value="yearly" className="text-xs">Tahunan</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
         {/* Level 3: Modern Chart (Requirement 8) */}
         <Card className="p-4 sm:p-5 border border-border bg-card shadow-xs">
           <div className="mb-4">
-            <h3 className="text-base font-semibold text-foreground">Grafik perbandingan pendapatan & pengeluaran</h3>
+            <h3 className="text-base md:text-[17px] font-semibold tracking-tight text-foreground">Grafik perbandingan pendapatan & pengeluaran</h3>
             <p className="text-xs text-muted-foreground mt-0.5">Visualisasi tren keuangan semester berjalan</p>
           </div>
           
@@ -973,7 +940,7 @@ export function FinanceContent({ tab }: FinanceContentProps) {
         {/* Level 3: Table - Detail Transaksi Pemasukan & Pengeluaran */}
         <Card className="p-4 sm:p-5 border border-border bg-card shadow-xs">
           <div className="mb-4">
-            <h3 className="text-base font-semibold text-foreground">Rincian mutasi transaksi kas</h3>
+            <h3 className="text-base md:text-[17px] font-semibold tracking-tight text-foreground">Rincian mutasi transaksi kas</h3>
             <p className="text-xs text-muted-foreground mt-0.5">Daftar gabungan pos arus kas masuk dan keluar bisnis</p>
           </div>
           <EnhancedTableWithDialogs

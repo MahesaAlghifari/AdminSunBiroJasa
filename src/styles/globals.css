@@ -416,9 +416,9 @@
   font-size: 1rem;
 }
 
-/* Header vs Body Typographic Hierarchy (Requirement 13) */
+/* Header vs Body Typographic Hierarchy (Requirement 12 & 13) */
 .finance-table__header th {
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: 0.01em;
   color: var(--foreground);
 }
@@ -426,6 +426,13 @@
 .finance-table__body td {
   font-weight: 400;
   color: var(--foreground);
+  opacity: 0.95;
+}
+
+.finance-table__secondary {
+  font-weight: 350;
+  color: var(--muted-foreground);
+  font-size: 0.75rem;
 }
 
 /* Monospace Plate Number (Requirement 14) */

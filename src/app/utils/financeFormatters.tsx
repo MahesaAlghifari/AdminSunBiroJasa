@@ -246,33 +246,41 @@ export function PlateNumberBadge({ plate }: { plate: string }) {
 }
 
 /**
- * Status as PLAIN TEXT with appropriate typography (Requirement 23)
- * NO badge/pill/border background!
+ * Status as PLAIN TEXT without badges, pills, dots, or background containers (Requirements 7, 8, 20)
+ * Kas Kantor: Debit, Kredit -> plain neutral text
+ * Tagihan: Lunas, Belum lunas -> plain neutral text
+ * General: Clean sentence case plain text
  */
 export function PlainTextStatus({ status }: { status: string | null | undefined }) {
-  if (!status || status === "-") return <span className="text-muted-foreground">-</span>;
-
-  const s = String(status).trim().toLowerCase();
-  let colorClass = "text-foreground/80";
-
-  // Selesai / Lunas / Masuk / Debit / Ada
-  if (s === "lunas" || s === "selesai" || s === "debit" || s === "masuk" || s === "ada") {
-    colorClass = "text-emerald-600 dark:text-emerald-400 font-medium";
-  } 
-  // Belum lunas / Belum bayar / Kredit / Keluar / Menunggak / Batal / Belum
-  else if (s.includes("belum") || s === "kredit" || s === "keluar" || s === "menunggak" || s === "batal") {
-    colorClass = "text-rose-600 dark:text-rose-400 font-medium";
-  } 
-  // Proses / Kurang bayar / Pending
-  else if (s.includes("kurang") || s.includes("pending") || s === "proses") {
-    colorClass = "text-amber-600 dark:text-amber-400 font-medium";
+  if (!status || status === "-" || String(status).trim() === "") {
+    return <span className="text-muted-foreground">-</span>;
   }
 
-  // Sentence case presentation
-  const label = status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
+  const s = String(status).trim().toLowerCase();
 
+  // Debit / Kredit (Kas Kantor - Requirement 7): Pure neutral text, no bullet, dot, badge, pill, or background
+  if (s === "debit" || s === "kredit") {
+    return (
+      <span className="text-xs font-normal text-foreground whitespace-nowrap">
+        {s === "debit" ? "Debit" : "Kredit"}
+      </span>
+    );
+  }
+
+  // Tagihan Status (Requirement 8): "Lunas", "Belum lunas" plain text, no badge/pill
+  if (s === "lunas" || s.includes("belum lunas") || s.includes("belum bayar")) {
+    const label = s === "lunas" ? "Lunas" : "Belum lunas";
+    return (
+      <span className="text-xs font-normal text-foreground whitespace-nowrap">
+        {label}
+      </span>
+    );
+  }
+
+  // General Status (Requirement 6 & 20): Plain regular text
+  const label = status.charAt(0).toUpperCase() + status.slice(1);
   return (
-    <span className={`text-xs ${colorClass}`}>
+    <span className="text-xs font-normal text-foreground whitespace-nowrap">
       {label}
     </span>
   );

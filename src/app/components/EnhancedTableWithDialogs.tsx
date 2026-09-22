@@ -45,6 +45,11 @@ import {
   formatCustomerName,
   formatBerkasName
 } from "../utils/financeFormatters";
+import { 
+  FinanceDateFilter, 
+  FinanceDateFilterValue, 
+  getWeekRange 
+} from "./FinanceDateFilter";
 
 export interface Column {
   key: string;
@@ -100,7 +105,7 @@ export function EnhancedTableWithDialogs({
 }: EnhancedTableWithDialogsProps) {
   // Search inputs (Requirement 12: separate date and text searches)
   const [searchTerm, setSearchTerm] = useState("");
-  const [dateSearchTerm, setDateSearchTerm] = useState("");
+  const [dateFilter, setDateFilter] = useState<FinanceDateFilterValue | null>(null);
 
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(itemsPerPageOptions[0]);
@@ -251,14 +256,38 @@ export function EnhancedTableWithDialogs({
         if (!matchesQuery) return false;
       }
 
-      // 2. Date Search (Requirement 12)
-      if (dateSearchTerm.trim() !== "") {
-        const dateQuery = dateSearchTerm.trim().toLowerCase();
+      // 2. Date Filter (Calendar-based: Hari, Minggu, Bulan, Tahun - Requirements 4-10)
+      if (dateFilter) {
         const matchesDate = Object.entries(item).some(([k, val]) => {
           const lowerK = k.toLowerCase();
           if (lowerK.includes("tanggal") || lowerK.includes("tgl") || lowerK.includes("tempo")) {
-            const formatted = formatDateDDMMYYYY(String(val)).toLowerCase();
-            return formatted.includes(dateQuery) || String(val).toLowerCase().includes(dateQuery);
+            const ts = parseDateTimestamp(String(val));
+            if (!ts) return false;
+            const itemDate = new Date(ts);
+
+            if (dateFilter.mode === "hari" && dateFilter.selectedDate) {
+              return (
+                itemDate.getFullYear() === dateFilter.selectedDate.getFullYear() &&
+                itemDate.getMonth() === dateFilter.selectedDate.getMonth() &&
+                itemDate.getDate() === dateFilter.selectedDate.getDate()
+              );
+            }
+
+            if (dateFilter.mode === "minggu" && dateFilter.selectedDate) {
+              const { start, end } = getWeekRange(dateFilter.selectedDate);
+              return itemDate >= start && itemDate <= end;
+            }
+
+            if (dateFilter.mode === "bulan" && dateFilter.selectedMonth !== undefined && dateFilter.selectedYear !== undefined) {
+              return (
+                itemDate.getFullYear() === dateFilter.selectedYear &&
+                itemDate.getMonth() === dateFilter.selectedMonth
+              );
+            }
+
+            if (dateFilter.mode === "tahun" && dateFilter.selectedYear !== undefined) {
+              return itemDate.getFullYear() === dateFilter.selectedYear;
+            }
           }
           return false;
         });
@@ -267,13 +296,17 @@ export function EnhancedTableWithDialogs({
 
       // 3. Column Dropdown Filters
       const matchesFilters = Object.entries(filters).every(([key, value]) => {
-        if (!value || value === "all") return true;
+        if (!value || value === "all" || value === "Semua") return true;
+        const colDef = columns.find(c => c.key === key);
+        if (colDef?.filterType === "select") {
+          return String(item[key]).toLowerCase() === value.toLowerCase();
+        }
         return String(item[key]).toLowerCase().includes(value.toLowerCase());
       });
 
       return matchesFilters;
     });
-  }, [data, searchTerm, dateSearchTerm, filters]);
+  }, [data, searchTerm, dateFilter, filters]);
 
   // Sorted data (Requirement 10 & 11)
   const sortedData = useMemo(() => {
@@ -313,10 +346,22 @@ export function EnhancedTableWithDialogs({
   const endIndex = startIndex + itemsPerPage;
   const paginatedData = sortedData.slice(startIndex, endIndex);
 
-  // Column Alignment: text left, numbers right (Requirement 5)
-  const getColumnAlignment = (col: Column): "left" | "right" => {
+  // Column Alignment: text left, numbers right, plate and status center (Requirements 5, 19)
+  const getColumnAlignment = (col: Column): "left" | "right" | "center" => {
     if (col.align) return col.align;
     const lower = col.key.toLowerCase();
+
+    // Plate: center (Requirement 19)
+    if (lower === "nopol" || lower.includes("plat")) {
+      return "center";
+    }
+
+    // Status: center (Requirement 19)
+    if (lower === "status" || lower.includes("status") || lower === "bpkb" || lower === "r4 / r2") {
+      return "center";
+    }
+
+    // Number / currency: right (Requirement 19)
     if (
       lower.includes("uang") || 
       lower.includes("biaya") || 
@@ -335,6 +380,8 @@ export function EnhancedTableWithDialogs({
     ) {
       return "right";
     }
+
+    // Text / general: left (Requirement 19)
     return "left";
   };
 
@@ -364,17 +411,17 @@ export function EnhancedTableWithDialogs({
     }
 
     // Customer name with sentence case preserving acronyms (Requirement 7)
-    if (lowerKey === "customer") {
+    if (lowerKey === "customer" || lowerKey === "nama customer") {
       return <span className="text-foreground/90 font-medium">{formatCustomerName(String(value))}</span>;
     }
 
     // Nama berkas with sentence case preserving acronyms (Requirement 8)
-    if (lowerKey === "namaberkas" || lowerKey === "namasesuaibpkb") {
+    if (lowerKey === "nama" || lowerKey === "namaberkas" || lowerKey === "namasesuaibpkb") {
       return <span className="text-foreground/90">{formatBerkasName(String(value))}</span>;
     }
 
     // Status as PLAIN TEXT without pill/badge (Requirement 23)
-    if (lowerKey === "status" || lowerKey === "statusbpkb" || lowerKey === "statusprofit" || lowerKey === "statuscashback") {
+    if (lowerKey === "status" || lowerKey === "statusbpkb" || lowerKey === "statusprofit" || lowerKey === "statuscashback" || lowerKey === "bpkb") {
       return <PlainTextStatus status={String(value)} />;
     }
 
@@ -450,7 +497,7 @@ export function EnhancedTableWithDialogs({
   const clearFilters = () => {
     setFilters({});
     setSearchTerm("");
-    setDateSearchTerm("");
+    setDateFilter(null);
     setSortKey(null);
     setSortDirection(null);
   };
@@ -458,14 +505,14 @@ export function EnhancedTableWithDialogs({
   const hasActiveFilters = 
     Object.values(filters).some(v => v && v !== "all") || 
     searchTerm !== "" || 
-    dateSearchTerm !== "" ||
+    dateFilter !== null ||
     sortKey !== null;
 
   return (
     <div className="finance-table-container space-y-3.5">
       {/* Table Toolbar (Requirement 14: Action Tambah ALIGN LEFT, Settings, Single Search) */}
       <div className="flex flex-col md:flex-row gap-2.5 justify-between items-stretch md:items-center">
-        {/* Left Section: Action Tambah (ALIGN LEFT) + Filter Toggle + Pengaturan Tabel (Desktop Only) */}
+        {/* Left Section: Action Tambah (ALIGN LEFT) + Date Filter Quick Trigger + Filter Toggle + Pengaturan Tabel (Desktop Only) */}
         <div className="flex items-center gap-2 flex-wrap">
           {onAdd && !hideAddButton && (
             <Button
@@ -476,6 +523,17 @@ export function EnhancedTableWithDialogs({
               <Plus className="w-3.5 h-3.5" />
               <span>Tambah</span>
             </Button>
+          )}
+
+          {/* Quick Calendar Date Filter (Requirements 4-10: Calendar Only) */}
+          {hasDateColumn && (
+            <FinanceDateFilter
+              value={dateFilter}
+              onChange={(v) => {
+                setDateFilter(v);
+                setCurrentPage(1);
+              }}
+            />
           )}
 
           <Button
@@ -612,25 +670,6 @@ export function EnhancedTableWithDialogs({
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                {/* Date Filter (Requirement 7: Tanggal exclusively in filter panel) */}
-                {hasDateColumn && (
-                  <div className="space-y-1">
-                    <Label className="text-xs font-medium text-foreground/80">Tanggal</Label>
-                    <div className="relative">
-                      <Calendar className="absolute left-2.5 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-                      <Input
-                        placeholder="Cari tanggal (DD/MM/YYYY)..."
-                        className="pl-8 bg-background border-border h-8 text-xs font-normal placeholder:font-normal placeholder:text-muted-foreground/60"
-                        value={dateSearchTerm}
-                        onChange={(e) => {
-                          setDateSearchTerm(e.target.value);
-                          setCurrentPage(1);
-                        }}
-                      />
-                    </div>
-                  </div>
-                )}
-
                 {/* Structured Dropdown Filters (Requirements 4 & 5: Pengurusan, Rekening, etc.) */}
                 {structuredFilterColumns.map(col => {
                   const options = col.filterOptions || Array.from(new Set(data.map(d => d[col.key]).filter(Boolean))).sort();
@@ -710,7 +749,7 @@ export function EnhancedTableWithDialogs({
                       : "table-cell md:hidden";
 
                   const align = getColumnAlignment(col);
-                  const alignClass = align === "right" ? "text-right" : "text-left";
+                  const alignClass = align === "right" ? "text-right" : align === "center" ? "text-center" : "text-left";
                   const isSorted = sortKey === col.key;
 
                   return (
@@ -719,7 +758,7 @@ export function EnhancedTableWithDialogs({
                       onClick={() => handleSortToggle(col.key)}
                       className={`h-9 px-3.5 font-semibold text-foreground/80 whitespace-nowrap text-xs select-none cursor-pointer hover:text-foreground ${alignClass} ${visibilityClass}`}
                     >
-                      <div className={`inline-flex items-center gap-1 ${align === "right" ? "flex-row-reverse" : "flex-row"}`}>
+                      <div className={`inline-flex items-center gap-1 ${align === "right" ? "flex-row-reverse" : align === "center" ? "justify-center" : "flex-row"}`}>
                         <span>{col.label}</span>
                         {isSorted ? (
                           sortDirection === "asc" ? (
@@ -774,7 +813,7 @@ export function EnhancedTableWithDialogs({
                           : "table-cell md:hidden";
 
                       const align = getColumnAlignment(col);
-                      const alignClass = align === "right" ? "text-right" : "text-left";
+                      const alignClass = align === "right" ? "text-right" : align === "center" ? "text-center" : "text-left";
 
                       return (
                         <TableCell 
