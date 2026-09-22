@@ -12,7 +12,7 @@ import {
 } from "./status-config";
 
 const badgeVariants = cva(
-  "inline-flex items-center justify-center rounded-md border h-5 px-2 py-0 text-[11px] leading-none font-medium text-[#333333] [&>svg]:text-[#333333] w-fit whitespace-nowrap shrink-0 [&>svg]:size-3 gap-1 [&>svg]:pointer-events-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive transition-[color,box-shadow] overflow-hidden",
+  "inline-flex items-center justify-center rounded-md border h-5 px-2 py-0 text-[11px] leading-none font-medium w-fit whitespace-nowrap shrink-0 [&>svg]:size-3 gap-1 [&>svg]:pointer-events-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive transition-[color,box-shadow] overflow-hidden",
   {
     variants: {
       variant: {
@@ -21,7 +21,7 @@ const badgeVariants = cva(
         secondary:
           "border-transparent bg-secondary text-[#333333]",
         destructive:
-          "border-red-500/30 bg-red-500/15 text-[#333333]",
+          "border-red-500/30 bg-red-500/15 text-red-700 dark:text-red-300",
         outline:
           "border-border bg-transparent text-[#333333] [a&]:hover:bg-accent",
       },

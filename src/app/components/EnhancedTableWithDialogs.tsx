@@ -121,8 +121,16 @@ export function EnhancedTableWithDialogs({
       return `Rp ${formatted}`;
     }
     
-    // Format status badges
-    if (key.toLowerCase().includes("status") || key.toLowerCase().includes("jenis")) {
+    // Format status badges (exclude non-badge fields: jenis layanan, jenis kas, status kas kantor, wilayah, dll)
+    const lowerKey = key.toLowerCase();
+    const isExcluded = 
+      lowerKey.includes("layanan") || 
+      lowerKey.includes("wilayah") || 
+      lowerKey.includes("kantor") ||
+      lowerKey === "jenis" ||
+      lowerKey === "status"; // kas kantor has column key 'status' with Debit/Kredit which is status kas kantor
+
+    if (!isExcluded && (lowerKey.includes("status") || lowerKey.includes("jabatan"))) {
       return <Badge status={value}>{value}</Badge>;
     }
     

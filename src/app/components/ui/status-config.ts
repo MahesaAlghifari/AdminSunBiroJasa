@@ -23,10 +23,10 @@ export type StatusSemantic =
  * Standardized soft background & border tokens with #333333 text:
  */
 export const STATUS_STYLES: Record<StatusSemantic, string> = {
-  success: 'bg-green-500/15 text-[#333333] border-green-500/30',
-  info: 'bg-blue-500/15 text-[#333333] border-blue-500/30',
-  warning: 'bg-amber-500/15 text-[#333333] border-amber-500/30',
-  error: 'bg-red-500/15 text-[#333333] border-red-500/30',
+  success: 'bg-green-500/15 text-green-700 dark:text-green-300 border-green-500/30',
+  info: 'bg-blue-500/15 text-blue-700 dark:text-blue-300 border-blue-500/30',
+  warning: 'bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30',
+  error: 'bg-red-500/15 text-red-700 dark:text-red-300 border-red-500/30',
   neutral: 'bg-slate-500/15 text-[#333333] border-slate-500/30',
   role: 'bg-slate-500/15 text-[#333333] border-slate-500/30',
 };
@@ -140,6 +140,9 @@ export const BUSINESS_STATUS_MAP: Record<string, StatusSemantic> = {
   'CLIENT': 'role',
   'client': 'role',
   'Client': 'role',
+  'CLILEN': 'role',
+  'clilen': 'role',
+  'Clilen': 'role',
   'MESSENGER': 'role',
   'messenger': 'role',
   'Messenger': 'role',
@@ -230,7 +233,7 @@ export function getStatusBadgeClass(status: string | number | undefined | null):
   if (lower.includes('batal') || lower.includes('gagal') || lower.includes('nonaktif') || lower.includes('belum lunas') || lower.includes('urgent')) {
     return STATUS_STYLES.error;
   }
-  if (lower.includes('admin') || lower.includes('finance') || lower.includes('messenger') || lower.includes('svp') || lower.includes('client') || lower.includes('jabatan') || lower.includes('role')) {
+  if (lower.includes('admin') || lower.includes('finance') || lower.includes('messenger') || lower.includes('svp') || lower.includes('client') || lower.includes('clilen') || lower.includes('jabatan') || lower.includes('role')) {
     return STATUS_STYLES.role;
   }
   if (lower.includes('proses') || lower.includes('terjadwal') || lower.includes('normal')) {

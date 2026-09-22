@@ -86,8 +86,11 @@ export function EnhancedTable({
       return `Rp ${formatted}`;
     }
     
-    // Format status badges
-    if (key.toLowerCase().includes("status")) {
+    // Format status and jabatan badges (exclude non-badge fields: jenis layanan, wilayah, dll)
+    const lowerKey = key.toLowerCase();
+    const isExcluded = lowerKey.includes("layanan") || lowerKey.includes("wilayah") || lowerKey.includes("kantor");
+    
+    if (!isExcluded && (lowerKey.includes("status") || lowerKey.includes("jabatan"))) {
       return <Badge status={value}>{value}</Badge>;
     }
     
