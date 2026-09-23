@@ -169,10 +169,28 @@ export function MasterDataContent({ tab }: MasterDataContentProps) {
     toast.success("Data karyawan berhasil dihapus!");
   };
 
+  // Sub-tab Breadcrumb renderer (consistent with Finance visual language)
+  const renderSubTabHeader = (title: string, description?: string) => (
+    <div className="space-y-1">
+      <nav className="text-xs text-muted-foreground flex items-center gap-1.5 pb-2" aria-label="Breadcrumb">
+        <span>Master Data</span>
+        <span>/</span>
+        <span className="text-foreground font-medium">{title}</span>
+      </nav>
+      {description && (
+        <div className="mb-4">
+          <h3 className="text-lg font-semibold text-foreground tracking-tight">{title}</h3>
+          <p className="text-xs md:text-sm text-muted-foreground">{description}</p>
+        </div>
+      )}
+    </div>
+  );
+
   // ─── Samsat Tab ───────────────────────────────────────────────────────────
   if (tab === "samsat") {
     return (
-      <>
+      <div className="space-y-4">
+        {renderSubTabHeader("Data Samsat", "Kelola data Samsat yang digunakan dalam sistem")}
         <Card className="glass-card p-4">
           <EnhancedTable
             columns={[
@@ -198,6 +216,7 @@ export function MasterDataContent({ tab }: MasterDataContentProps) {
             searchPlaceholder="Cari samsat..."
           />
         </Card>
+
 
         {/* Add Samsat */}
         <Dialog open={isAddSamsatOpen} onOpenChange={setIsAddSamsatOpen}>
@@ -298,14 +317,15 @@ export function MasterDataContent({ tab }: MasterDataContentProps) {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-      </>
+      </div>
     );
   }
 
   // ─── Karyawan Tab ─────────────────────────────────────────────────────────
   if (tab === "karyawan") {
     return (
-      <>
+      <div className="space-y-4">
+        {renderSubTabHeader("Data Karyawan", "Kelola data karyawan dan informasi terkait")}
         <Card className="glass-card p-4">
           <EnhancedTable
             columns={[
@@ -391,7 +411,7 @@ export function MasterDataContent({ tab }: MasterDataContentProps) {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-      </>
+      </div>
     );
   }
 

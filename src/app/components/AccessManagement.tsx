@@ -242,46 +242,46 @@ export function AccessManagement({ currentUserId, currentUserName }: AccessManag
   };
 
   return (
-    <div className="p-6">
-      <div className="mb-6">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 flex items-center justify-center">
-            <Shield className="w-6 h-6 text-blue-400" />
-          </div>
-          <div>
-            <h2 className="text-lg">Pengaturan Hak Akses</h2>
-            <p className="text-muted-foreground">Kelola hak akses Finance dan Admin</p>
-          </div>
+    <div className="space-y-4 px-2 sm:px-3 lg:px-4 py-4 md:py-6 max-w-7xl mx-auto">
+      <div>
+        <nav className="text-xs text-muted-foreground flex items-center gap-1.5 pb-2" aria-label="Breadcrumb">
+          <span>Master Data</span>
+          <span>/</span>
+          <span className="text-foreground font-medium">Pengaturan Hak Akses</span>
+        </nav>
+        <div className="mb-4">
+          <h3 className="text-lg font-semibold text-foreground tracking-tight">Pengaturan Hak Akses</h3>
+          <p className="text-xs md:text-sm text-muted-foreground">Kelola hak akses Finance dan Admin</p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5">
         {usersAccess.map((user) => (
-          <Card key={user.userId} className="glass-card p-4">
+          <Card key={user.userId} className="glass-card p-5 border border-border/80">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500/20 to-cyan-500/20 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center font-medium text-foreground">
                   <span className="text-sm">{user.userName.charAt(0)}</span>
                 </div>
                 <div>
-                  <p className="font-medium">{user.userName}</p>
-                  {getRoleBadge(user.role)}
+                  <p className="font-semibold text-foreground text-sm">{user.userName}</p>
+                  <div className="mt-0.5">{getRoleBadge(user.role)}</div>
                 </div>
               </div>
               <Button
                 size="sm"
                 variant="outline"
                 onClick={() => handleGrantAllAccess(user.userId)}
-                className="border-primary text-primary hover:bg-primary/10"
+                className="h-8 border-primary/50 text-primary hover:bg-primary/10 text-xs font-medium gap-1.5"
               >
-                <Shield className="w-4 h-4 mr-2" />
-                Akses Penuh
+                <Shield className="w-3.5 h-3.5" />
+                <span>Akses Penuh</span>
               </Button>
             </div>
 
             <Separator className="my-4" />
 
-            <div className="space-y-3">
+            <div className="space-y-2">
               {Object.entries(user.permissions).map(([key, value]) => {
                 const permissionKey = key as keyof UserAccess['permissions'];
                 
@@ -291,9 +291,9 @@ export function AccessManagement({ currentUserId, currentUserName }: AccessManag
                 }
 
                 return (
-                  <div key={key} className="flex items-center justify-between py-2 border-b border-border/50 last:border-0">
-                    <div className="flex-1">
-                      <Label className="text-xs cursor-pointer">
+                  <div key={key} className="flex items-center justify-between py-2 border-b border-border/40 last:border-0">
+                    <div className="flex-1 pr-3">
+                      <Label className="text-xs font-medium cursor-pointer text-foreground">
                         {permissionLabels[permissionKey]}
                       </Label>
                       {permissionKey === 'orderTrackingVerified' && (
@@ -302,11 +302,11 @@ export function AccessManagement({ currentUserId, currentUserName }: AccessManag
                         </p>
                       )}
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 shrink-0">
                       {value ? (
-                        <Check className="w-3 h-3 text-green-400" />
+                        <Check className="w-3.5 h-3.5 text-emerald-500" />
                       ) : (
-                        <X className="w-3 h-3 text-red-400" />
+                        <X className="w-3.5 h-3.5 text-muted-foreground/50" />
                       )}
                       <Switch
                         checked={value}
@@ -321,12 +321,12 @@ export function AccessManagement({ currentUserId, currentUserName }: AccessManag
             <Separator className="my-4" />
 
             <div className="text-xs text-muted-foreground">
-              <p className="mb-1">Izin yang aktif:</p>
-              <div className="flex flex-wrap gap-1">
+              <p className="mb-2 font-medium">Izin yang aktif:</p>
+              <div className="flex flex-wrap gap-1.5">
                 {Object.entries(user.permissions)
                   .filter(([_, value]) => value)
                   .map(([key]) => (
-                    <Badge key={key} variant="outline">
+                    <Badge key={key} variant="outline" className="text-[11px] font-normal">
                       {permissionLabels[key as keyof UserAccess['permissions']]}
                     </Badge>
                   ))}
@@ -337,14 +337,14 @@ export function AccessManagement({ currentUserId, currentUserName }: AccessManag
       </div>
 
       {/* Access Rules Info */}
-      <Card className="glass-card p-4 mt-6 bg-gradient-to-br from-blue-500/5 to-cyan-500/5 border-blue-500/20">
-        <h3 className="mb-4 flex items-center gap-2">
-          <Shield className="w-5 h-5 text-blue-400" />
+      <Card className="glass-card p-5 mt-6 bg-gradient-to-br from-blue-500/5 to-cyan-500/5 border-blue-500/20">
+        <h4 className="mb-3 font-semibold text-foreground text-sm flex items-center gap-2">
+          <Shield className="w-4 h-4 text-blue-500" />
           Aturan Hak Akses Default
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+        </h4>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
           <div>
-            <p className="text-blue-400 mb-2">Administrator (SVP):</p>
+            <p className="text-blue-500 font-semibold mb-1">Administrator (SVP):</p>
             <ul className="list-disc list-inside text-muted-foreground space-y-1">
               <li>Akses penuh ke semua modul</li>
               <li>Dapat mengatur hak akses pengguna lain</li>
@@ -352,14 +352,14 @@ export function AccessManagement({ currentUserId, currentUserName }: AccessManag
             </ul>
           </div>
           <div>
-            <p className="text-green-400 mb-2">Finance:</p>
+            <p className="text-emerald-500 font-semibold mb-1">Finance:</p>
             <ul className="list-disc list-inside text-muted-foreground space-y-1">
               <li>Dashboard dan Finance (default)</li>
               <li>Akses tambahan dapat diberikan administrator</li>
             </ul>
           </div>
           <div>
-            <p className="text-blue-400 mb-2">Admin:</p>
+            <p className="text-blue-500 font-semibold mb-1">Admin:</p>
             <ul className="list-disc list-inside text-muted-foreground space-y-1">
               <li>Dashboard, Messenger Task, Order (default)</li>
               <li>Tidak bisa edit "Sudah Terverifikasi" (default)</li>
@@ -367,7 +367,7 @@ export function AccessManagement({ currentUserId, currentUserName }: AccessManag
             </ul>
           </div>
           <div>
-            <p className="text-orange-400 mb-2">Messenger:</p>
+            <p className="text-amber-500 font-semibold mb-1">Messenger:</p>
             <ul className="list-disc list-inside text-muted-foreground space-y-1">
               <li>Dashboard dan Messenger Task</li>
               <li>Tidak dapat diubah hak aksesnya</li>

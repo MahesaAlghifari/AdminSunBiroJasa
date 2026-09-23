@@ -233,28 +233,75 @@ export function ManajemenPengguna() {
   };
 
   return (
-    <div className="p-6">
-      <div className="mb-6">
-        <h2 className="text-lg mb-2">Manajemen Pengguna</h2>
-        <p className="text-muted-foreground">Kelola akun pengguna dan akses sistem</p>
+    <div className="space-y-4">
+      <div>
+        <nav className="text-xs text-muted-foreground flex items-center gap-1.5 pb-2" aria-label="Breadcrumb">
+          <span>Master Data</span>
+          <span>/</span>
+          <span className="text-foreground font-medium">Manajemen Pengguna</span>
+        </nav>
+        <div className="mb-4">
+          <h3 className="text-lg font-semibold text-foreground tracking-tight">Manajemen Pengguna</h3>
+          <p className="text-xs md:text-sm text-muted-foreground">Kelola akun pengguna dan akses sistem</p>
+        </div>
       </div>
 
-      <Card className="glass-card p-4">
-        {/* Add Button and Filters */}
-        <div className="flex justify-end mb-4">
-          <Button onClick={handleAddClick} className="bg-primary hover:bg-primary/90">
-            <Plus className="w-4 h-4 mr-2" />
-            Tambah Pengguna
-          </Button>
-        </div>
+      <Card className="glass-card p-4 space-y-3.5">
+        {/* Filters and Add Button Toolbar (Requirement: Add on Left, compact inputs) */}
+        <div className="flex flex-col md:flex-row gap-2.5 justify-between items-stretch md:items-center">
+          <div className="flex items-center gap-2 flex-wrap">
+            <Button 
+              size="sm" 
+              onClick={handleAddClick} 
+              className="h-8 text-xs bg-primary hover:bg-primary/90 text-primary-foreground gap-1.5 shadow-xs shrink-0"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Tambah Pengguna</span>
+            </Button>
 
-        {/* Filters */}
-        <div className="flex flex-col lg:flex-row gap-4 mb-6">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Select 
+              value={filterJabatan} 
+              onValueChange={(value) => {
+                setFilterJabatan(value);
+                handleFilterChange();
+              }}
+            >
+              <SelectTrigger className="w-full sm:w-[150px] bg-background border-border h-8 text-xs font-normal">
+                <SelectValue placeholder="Semua Jabatan" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all" className="text-xs">Semua Jabatan</SelectItem>
+                <SelectItem value="ADMIN" className="text-xs">ADMIN</SelectItem>
+                <SelectItem value="SVP" className="text-xs">SVP</SelectItem>
+                <SelectItem value="FINANCE" className="text-xs">FINANCE</SelectItem>
+                <SelectItem value="CLILEN" className="text-xs">CLILEN</SelectItem>
+                <SelectItem value="MESSENGER" className="text-xs">MESSENGER</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select 
+              value={filterStatus} 
+              onValueChange={(value) => {
+                setFilterStatus(value);
+                handleFilterChange();
+              }}
+            >
+              <SelectTrigger className="w-full sm:w-[130px] bg-background border-border h-8 text-xs font-normal">
+                <SelectValue placeholder="Semua Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all" className="text-xs">Semua Status</SelectItem>
+                <SelectItem value="Aktif" className="text-xs">Aktif</SelectItem>
+                <SelectItem value="Nonaktif" className="text-xs">Nonaktif</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="relative w-full sm:w-72 md:w-80">
+            <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
             <Input 
               placeholder="Cari nama atau email..." 
-              className="pl-10 bg-input-background border-border"
+              className="pl-8 bg-background border-border h-8 text-xs font-normal placeholder:font-normal placeholder:text-muted-foreground/60"
               value={searchTerm}
               onChange={(e) => {
                 setSearchTerm(e.target.value);
@@ -262,98 +309,62 @@ export function ManajemenPengguna() {
               }}
             />
           </div>
-          <Select 
-            value={filterJabatan} 
-            onValueChange={(value) => {
-              setFilterJabatan(value);
-              handleFilterChange();
-            }}
-          >
-            <SelectTrigger className="w-full lg:w-[200px] bg-input-background border-border">
-              <SelectValue placeholder="Semua Jabatan" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Semua Jabatan</SelectItem>
-              <SelectItem value="ADMIN">ADMIN</SelectItem>
-              <SelectItem value="SVP">SVP</SelectItem>
-              <SelectItem value="FINANCE">FINANCE</SelectItem>
-              <SelectItem value="CLILEN">CLILEN</SelectItem>
-              <SelectItem value="MESSENGER">MESSENGER</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select 
-            value={filterStatus} 
-            onValueChange={(value) => {
-              setFilterStatus(value);
-              handleFilterChange();
-            }}
-          >
-            <SelectTrigger className="w-full lg:w-[200px] bg-input-background border-border">
-              <SelectValue placeholder="Semua Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Semua Status</SelectItem>
-              <SelectItem value="Aktif">Aktif</SelectItem>
-              <SelectItem value="Nonaktif">Nonaktif</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Info Bar */}
-        <div className="mb-4 flex justify-between items-center">
-          <p className="text-sm text-muted-foreground">
-            Menampilkan {filteredData.length} dari {penggunaData.length} pengguna
-          </p>
         </div>
 
         {/* Table */}
-        <div className="rounded-lg border border-border overflow-hidden">
-          <Table>
-            <TableHeader className="bg-secondary/30">
-              <TableRow>
-                <TableHead>No</TableHead>
-                <TableHead>Nama</TableHead>
-                <TableHead>Jabatan</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Aksi</TableHead>
+        <div className="rounded-lg border border-border bg-card overflow-hidden shadow-2xs">
+          <Table className="w-full">
+            <TableHeader className="bg-muted/40 border-b border-border">
+              <TableRow className="hover:bg-transparent">
+                <TableHead className="h-9 px-3.5 text-xs font-semibold text-foreground/80 w-12 text-center">No</TableHead>
+                <TableHead className="h-9 px-3.5 text-xs font-semibold text-foreground/80">Nama</TableHead>
+                <TableHead className="h-9 px-3.5 text-xs font-semibold text-foreground/80 text-center">Jabatan</TableHead>
+                <TableHead className="h-9 px-3.5 text-xs font-semibold text-foreground/80">Email</TableHead>
+                <TableHead className="h-9 px-3.5 text-xs font-semibold text-foreground/80 text-center">Status</TableHead>
+                <TableHead className="h-9 px-2 text-xs font-semibold text-foreground/80 text-center w-[110px]">Aksi</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {paginatedData.length > 0 ? (
                 paginatedData.map((item, index) => (
-                  <TableRow key={item.id} className="hover:bg-secondary/20 transition-colors">
-                    <TableCell className="w-16">{startIndex + index + 1}</TableCell>
-                    <TableCell>{item.nama}</TableCell>
-                    <TableCell>{getJabatanBadge(item.jabatan)}</TableCell>
-                    <TableCell className="text-muted-foreground">{item.email}</TableCell>
-                    <TableCell>{getStatusBadge(item.status)}</TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
+                  <TableRow key={item.id} className="hover:bg-muted/30 transition-colors border-b border-border/60 last:border-0 h-10">
+                    <TableCell className="px-3.5 py-2 text-xs text-muted-foreground text-center">{startIndex + index + 1}</TableCell>
+                    <TableCell className="px-3.5 py-2 text-xs font-medium text-foreground/90">{item.nama}</TableCell>
+                    <TableCell className="px-3.5 py-2 text-xs text-center">{getJabatanBadge(item.jabatan)}</TableCell>
+                    <TableCell className="px-3.5 py-2 text-xs text-muted-foreground">{item.email}</TableCell>
+                    <TableCell className="px-3.5 py-2 text-xs text-center">{getStatusBadge(item.status)}</TableCell>
+                    <TableCell className="px-2 py-1.5 text-center">
+                      <div className="flex items-center justify-center gap-1">
                         <Button 
                           size="sm" 
                           variant="ghost" 
-                          className="h-8 w-8 p-0"
+                          className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground hover:bg-secondary/50 rounded transition-colors"
                           onClick={() => handleViewClick(item)}
+                          title="Lihat Detail"
+                          aria-label="Lihat detail"
                         >
-                          <Eye className="w-4 h-4 text-cyan-400" />
+                          <Eye className="w-3.5 h-3.5" />
                         </Button>
                         <Button 
                           size="sm" 
                           variant="ghost" 
-                          className="h-8 w-8 p-0"
+                          className="h-7 w-7 p-0 text-muted-foreground hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-500/10 rounded transition-colors"
                           onClick={() => handleEditClick(item)}
+                          title="Edit Pengguna"
+                          aria-label="Edit pengguna"
                         >
-                          <Edit className="w-4 h-4 text-blue-400" />
+                          <Edit className="w-3.5 h-3.5" />
                         </Button>
                         {item.jabatan !== "SVP" && (
                           <Button 
                             size="sm" 
                             variant="ghost" 
-                            className="h-8 w-8 p-0"
+                            className="h-7 w-7 p-0 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded transition-colors"
                             onClick={() => handlePermissionClick(item)}
+                            title="Atur Hak Akses"
+                            aria-label="Atur hak akses"
                           >
-                            <Shield className="w-4 h-4 text-blue-500" />
+                            <Shield className="w-3.5 h-3.5" />
                           </Button>
                         )}
                       </div>
@@ -362,7 +373,7 @@ export function ManajemenPengguna() {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                  <TableCell colSpan={6} className="text-center text-muted-foreground py-8 text-xs">
                     Tidak ada data ditemukan
                   </TableCell>
                 </TableRow>
@@ -373,49 +384,33 @@ export function ManajemenPengguna() {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex justify-between items-center mt-4">
-            <div className="text-sm text-muted-foreground">
-              Halaman {currentPage} dari {totalPages}
+          <div className="flex items-center justify-between pt-1 text-xs">
+            <div className="text-muted-foreground text-[11px]">
+              Menampilkan {startIndex + 1} - {Math.min(startIndex + ITEMS_PER_PAGE, filteredData.length)} dari {filteredData.length} pengguna
             </div>
-            <Pagination>
-              <PaginationContent>
-                <PaginationItem>
-                  <PaginationPrevious 
-                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                    className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                  />
-                </PaginationItem>
-                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                  let pageNum;
-                  if (totalPages <= 5) {
-                    pageNum = i + 1;
-                  } else if (currentPage <= 3) {
-                    pageNum = i + 1;
-                  } else if (currentPage >= totalPages - 2) {
-                    pageNum = totalPages - 4 + i;
-                  } else {
-                    pageNum = currentPage - 2 + i;
-                  }
-                  return (
-                    <PaginationItem key={pageNum}>
-                      <PaginationLink
-                        onClick={() => setCurrentPage(pageNum)}
-                        isActive={currentPage === pageNum}
-                        className="cursor-pointer"
-                      >
-                        {pageNum}
-                      </PaginationLink>
-                    </PaginationItem>
-                  );
-                })}
-                <PaginationItem>
-                  <PaginationNext 
-                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                    className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                  />
-                </PaginationItem>
-              </PaginationContent>
-            </Pagination>
+            <div className="flex items-center gap-1.5">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+                className="h-7 text-xs border-border px-2.5"
+              >
+                Sebelumnya
+              </Button>
+              <div className="text-[11px] text-muted-foreground px-1">
+                {currentPage} / {totalPages}
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                disabled={currentPage === totalPages}
+                className="h-7 text-xs border-border px-2.5"
+              >
+                Selanjutnya
+              </Button>
+            </div>
           </div>
         )}
       </Card>

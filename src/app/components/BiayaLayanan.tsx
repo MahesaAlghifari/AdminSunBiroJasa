@@ -299,23 +299,23 @@ export function BiayaLayanan() {
     if (isPerpanjangan()) {
       return (
         <>
-          <TableHead>No</TableHead>
-          <TableHead>Wilayah Samsat</TableHead>
-          <TableHead>Biaya Jasa Lengkap</TableHead>
-          <TableHead>Biaya Jasa Nembak</TableHead>
-          <TableHead>Biaya Antar & Jemput</TableHead>
-          <TableHead className="text-right">Aksi</TableHead>
+          <TableHead className="h-9 px-3.5 text-xs font-semibold text-foreground/80 w-12 text-center">No</TableHead>
+          <TableHead className="h-9 px-3.5 text-xs font-semibold text-foreground/80">Wilayah Samsat</TableHead>
+          <TableHead className="h-9 px-3.5 text-xs font-semibold text-foreground/80 text-right">Biaya Jasa Lengkap</TableHead>
+          <TableHead className="h-9 px-3.5 text-xs font-semibold text-foreground/80 text-right">Biaya Jasa Nembak</TableHead>
+          <TableHead className="h-9 px-3.5 text-xs font-semibold text-foreground/80 text-right">Biaya Antar & Jemput</TableHead>
+          <TableHead className="h-9 px-2 text-xs font-semibold text-foreground/80 text-center w-[95px]">Aksi</TableHead>
         </>
       );
     }
     
     return (
       <>
-        <TableHead>No</TableHead>
-        <TableHead>Wilayah Samsat</TableHead>
-        <TableHead>Biaya Jasa</TableHead>
-        <TableHead>Biaya Antar & Jemput</TableHead>
-        <TableHead className="text-right">Aksi</TableHead>
+        <TableHead className="h-9 px-3.5 text-xs font-semibold text-foreground/80 w-12 text-center">No</TableHead>
+        <TableHead className="h-9 px-3.5 text-xs font-semibold text-foreground/80">Wilayah Samsat</TableHead>
+        <TableHead className="h-9 px-3.5 text-xs font-semibold text-foreground/80 text-right">Biaya Jasa</TableHead>
+        <TableHead className="h-9 px-3.5 text-xs font-semibold text-foreground/80 text-right">Biaya Antar & Jemput</TableHead>
+        <TableHead className="h-9 px-2 text-xs font-semibold text-foreground/80 text-center w-[95px]">Aksi</TableHead>
       </>
     );
   };
@@ -323,37 +323,39 @@ export function BiayaLayanan() {
   const renderTableRow = (item: any, index: number) => {
     if (isPerpanjangan()) {
       return (
-        <TableRow key={item.id} className="hover:bg-secondary/20 transition-colors">
-          <TableCell className="w-16">{startIndex + index + 1}</TableCell>
-          <TableCell>
+        <TableRow key={item.id} className="hover:bg-muted/30 transition-colors border-b border-border/60 last:border-0 h-10">
+          <TableCell className="px-3.5 py-2 text-xs text-muted-foreground text-center">{startIndex + index + 1}</TableCell>
+          <TableCell className="px-3.5 py-2 text-xs font-medium text-foreground/90">
             {item.wilayah}
           </TableCell>
-          <TableCell className="text-green-400">
-            Rp {item.biayaJasaLengkap?.toLocaleString()}
+          <TableCell className="px-3.5 py-2 text-xs text-right font-mono tabular-nums font-medium text-emerald-500">
+            Rp {item.biayaJasaLengkap?.toLocaleString('id-ID')}
           </TableCell>
-          <TableCell className="text-cyan-400">
-            Rp {item.biayaJasaNembak?.toLocaleString()}
+          <TableCell className="px-3.5 py-2 text-xs text-right font-mono tabular-nums font-medium text-cyan-500">
+            Rp {item.biayaJasaNembak?.toLocaleString('id-ID')}
           </TableCell>
-          <TableCell className="text-blue-500">
-            Rp {item.biayaAntarJemput?.toLocaleString()}
+          <TableCell className="px-3.5 py-2 text-xs text-right font-mono tabular-nums font-medium text-blue-500">
+            Rp {item.biayaAntarJemput?.toLocaleString('id-ID')}
           </TableCell>
-          <TableCell className="text-right">
-            <div className="flex justify-end gap-2">
+          <TableCell className="px-2 py-1.5 text-center">
+            <div className="flex items-center justify-center gap-1">
               <Button 
                 size="sm" 
                 variant="ghost" 
-                className="h-8 w-8 p-0"
+                className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground hover:bg-secondary/50 rounded transition-colors"
                 onClick={() => handleEditClick(item)}
+                aria-label="Edit biaya"
               >
-                <Edit className="w-4 h-4 text-blue-400" />
+                <Edit className="w-3.5 h-3.5" />
               </Button>
               <Button 
                 size="sm" 
                 variant="ghost" 
-                className="h-8 w-8 p-0"
+                className="h-7 w-7 p-0 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 rounded transition-colors"
                 onClick={() => handleDeleteClick(item)}
+                aria-label="Hapus biaya"
               >
-                <Trash2 className="w-4 h-4 text-red-400" />
+                <Trash2 className="w-3.5 h-3.5" />
               </Button>
             </div>
           </TableCell>
@@ -362,34 +364,36 @@ export function BiayaLayanan() {
     }
 
     return (
-      <TableRow key={item.id} className="hover:bg-secondary/20 transition-colors">
-        <TableCell className="w-16">{startIndex + index + 1}</TableCell>
-        <TableCell>
+      <TableRow key={item.id} className="hover:bg-muted/30 transition-colors border-b border-border/60 last:border-0 h-10">
+        <TableCell className="px-3.5 py-2 text-xs text-muted-foreground text-center">{startIndex + index + 1}</TableCell>
+        <TableCell className="px-3.5 py-2 text-xs font-medium text-foreground/90">
           {item.wilayah}
         </TableCell>
-        <TableCell className="text-green-400">
-          Rp {item.biayaJasa?.toLocaleString()}
+        <TableCell className="px-3.5 py-2 text-xs text-right font-mono tabular-nums font-medium text-emerald-500">
+          Rp {item.biayaJasa?.toLocaleString('id-ID')}
         </TableCell>
-        <TableCell className="text-blue-500">
-          Rp {item.biayaAntarJemput?.toLocaleString()}
+        <TableCell className="px-3.5 py-2 text-xs text-right font-mono tabular-nums font-medium text-blue-500">
+          Rp {item.biayaAntarJemput?.toLocaleString('id-ID')}
         </TableCell>
-        <TableCell className="text-right">
-          <div className="flex justify-end gap-2">
+        <TableCell className="px-2 py-1.5 text-center">
+          <div className="flex items-center justify-center gap-1">
             <Button 
               size="sm" 
               variant="ghost" 
-              className="h-8 w-8 p-0"
+              className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground hover:bg-secondary/50 rounded transition-colors"
               onClick={() => handleEditClick(item)}
+              aria-label="Edit biaya"
             >
-              <Edit className="w-4 h-4 text-blue-400" />
+              <Edit className="w-3.5 h-3.5" />
             </Button>
             <Button 
               size="sm" 
               variant="ghost" 
-              className="h-8 w-8 p-0"
+              className="h-7 w-7 p-0 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 rounded transition-colors"
               onClick={() => handleDeleteClick(item)}
+              aria-label="Hapus biaya"
             >
-              <Trash2 className="w-4 h-4 text-red-400" />
+              <Trash2 className="w-3.5 h-3.5" />
             </Button>
           </div>
         </TableCell>
@@ -496,139 +500,147 @@ export function BiayaLayanan() {
   };
 
   return (
-    <Card className="glass-card p-4">
-      <div className="mb-6">
-        <h3 className="text-lg mb-2">Biaya Layanan</h3>
-        <p className="text-sm text-muted-foreground">
-          Kelola biaya layanan berdasarkan wilayah samsat
-        </p>
+    <div className="space-y-4">
+      <div>
+        <nav className="text-xs text-muted-foreground flex items-center gap-1.5 pb-2" aria-label="Breadcrumb">
+          <span>Master Data</span>
+          <span>/</span>
+          <span className="text-foreground font-medium">Biaya Layanan</span>
+        </nav>
+        <div className="mb-4">
+          <h3 className="text-lg font-semibold text-foreground tracking-tight">Biaya Layanan</h3>
+          <p className="text-xs md:text-sm text-muted-foreground">
+            Kelola biaya layanan berdasarkan wilayah Samsat
+          </p>
+        </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4">
-        <div className="overflow-x-auto -mx-6 px-6">
-          <TabsList className="inline-flex w-full min-w-max lg:grid lg:w-full lg:grid-cols-7 gap-2 bg-secondary/30 p-2">
-            {layananTabs.map((tab) => (
-              <TabsTrigger 
-                key={tab.value} 
-                value={tab.value}
-                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-xs sm:text-sm whitespace-nowrap"
-              >
-                {tab.label}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </div>
+      <Card className="glass-card p-4">
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4">
+          <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+            <TabsList className="inline-flex w-full min-w-max lg:grid lg:w-full lg:grid-cols-7 gap-1.5 bg-secondary/30 p-1.5 rounded-lg border border-border/40">
+              {layananTabs.map((tab) => (
+                <TabsTrigger 
+                  key={tab.value} 
+                  value={tab.value}
+                  className="data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm text-xs sm:text-xs font-medium whitespace-nowrap transition-all"
+                >
+                  {tab.label}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </div>
 
-        {layananTabs.map((tab) => (
-          <TabsContent key={tab.value} value={tab.value} className="space-y-4">
-            {/* Search & Add Button */}
-            <div className="flex flex-col sm:flex-row gap-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input 
-                  placeholder="Cari wilayah..." 
-                  className="pl-10 bg-input-background border-border"
-                  value={searchTerm}
-                  onChange={(e) => handleSearchChange(e.target.value)}
-                />
+          {layananTabs.map((tab) => (
+            <TabsContent key={tab.value} value={tab.value} className="space-y-3.5">
+              {/* Toolbar (Primary Add button at LEFT side, Search at right) */}
+              <div className="flex flex-col md:flex-row gap-2.5 justify-between items-stretch md:items-center">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Button 
+                    size="sm"
+                    className="h-8 text-xs bg-primary hover:bg-primary/90 text-primary-foreground gap-1.5 shadow-xs shrink-0"
+                    onClick={handleAddClick}
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Tambah Biaya</span>
+                  </Button>
+                </div>
+                <div className="relative w-full sm:w-72 md:w-80">
+                  <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+                  <Input 
+                    placeholder="Cari wilayah..." 
+                    className="pl-8 bg-background border-border h-8 text-xs font-normal placeholder:font-normal placeholder:text-muted-foreground/60"
+                    value={searchTerm}
+                    onChange={(e) => handleSearchChange(e.target.value)}
+                  />
+                </div>
               </div>
-              <Button 
-                className="bg-primary hover:bg-primary/90"
-                onClick={handleAddClick}
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Tambah Biaya
-              </Button>
-            </div>
 
-            {/* Table */}
-            <div className="rounded-lg border border-border overflow-hidden">
-              <Table>
-                <TableHeader className="bg-secondary/30">
-                  <TableRow>
-                    {renderTableHeaders()}
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {paginatedData.length > 0 ? (
-                    paginatedData.map((item, index) => renderTableRow(item, index))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={isPerpanjangan() ? 6 : 5} className="text-center text-muted-foreground py-8">
-                        Tidak ada data ditemukan
-                      </TableCell>
+              {/* Table */}
+              <div className="rounded-lg border border-border bg-card overflow-hidden shadow-2xs">
+                <Table className="w-full">
+                  <TableHeader className="bg-muted/40 border-b border-border">
+                    <TableRow className="hover:bg-transparent">
+                      {renderTableHeaders()}
                     </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="flex justify-between items-center mt-4">
-                <div className="text-sm text-muted-foreground">
-                  Menampilkan {startIndex + 1} - {Math.min(startIndex + ITEMS_PER_PAGE, filteredData.length)} dari {filteredData.length} data
-                </div>
-                <Pagination>
-                  <PaginationContent>
-                    <PaginationItem>
-                      <PaginationPrevious 
-                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                        className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                      />
-                    </PaginationItem>
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                      <PaginationItem key={page}>
-                        <PaginationLink
-                          onClick={() => setCurrentPage(page)}
-                          isActive={currentPage === page}
-                          className="cursor-pointer"
-                        >
-                          {page}
-                        </PaginationLink>
-                      </PaginationItem>
-                    ))}
-                    <PaginationItem>
-                      <PaginationNext 
-                        onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                        className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                      />
-                    </PaginationItem>
-                  </PaginationContent>
-                </Pagination>
+                  </TableHeader>
+                  <TableBody>
+                    {paginatedData.length > 0 ? (
+                      paginatedData.map((item, index) => renderTableRow(item, index))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={isPerpanjangan() ? 6 : 5} className="text-center text-muted-foreground py-8 text-xs">
+                          Tidak ada data ditemukan
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
               </div>
-            )}
 
-            {/* Summary */}
-            <Card className="glass-card p-4 bg-gradient-to-r from-blue-500/10 to-cyan-500/10">
-              <div className="flex justify-between items-center">
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Wilayah</p>
-                  <p className="text-2xl">{filteredData.length}</p>
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-between pt-1 text-xs">
+                  <div className="text-muted-foreground text-[11px]">
+                    Menampilkan {startIndex + 1} - {Math.min(startIndex + ITEMS_PER_PAGE, filteredData.length)} dari {filteredData.length} data
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                      disabled={currentPage === 1}
+                      className="h-7 text-xs border-border px-2.5"
+                    >
+                      Sebelumnya
+                    </Button>
+                    <div className="text-[11px] text-muted-foreground px-1">
+                      {currentPage} / {totalPages}
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                      disabled={currentPage === totalPages}
+                      className="h-7 text-xs border-border px-2.5"
+                    >
+                      Selanjutnya
+                    </Button>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-sm text-muted-foreground">
-                    {isPerpanjangan() ? "Rata-rata Biaya Lengkap" : "Rata-rata Biaya Jasa"}
-                  </p>
-                  <p className="text-2xl text-green-400">
-                    Rp {filteredData.length > 0 
-                      ? Math.round(
-                          filteredData.reduce((acc, item) => {
-                            if (isPerpanjangan()) {
-                              return acc + (item.biayaJasaLengkap || 0);
-                            }
-                            return acc + (item.biayaJasa || 0);
-                          }, 0) / filteredData.length
-                        ).toLocaleString()
-                      : 0
-                    }
-                  </p>
+              )}
+
+              {/* Summary */}
+              <Card className="glass-card p-4 border border-border/60 bg-gradient-to-r from-blue-500/5 to-cyan-500/5">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <p className="text-xs text-muted-foreground">Total Wilayah</p>
+                    <p className="text-xl font-semibold text-foreground">{filteredData.length}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs text-muted-foreground">
+                      {isPerpanjangan() ? "Rata-rata Biaya Lengkap" : "Rata-rata Biaya Jasa"}
+                    </p>
+                    <p className="text-xl font-semibold text-emerald-500">
+                      Rp {filteredData.length > 0 
+                        ? Math.round(
+                            filteredData.reduce((acc, item) => {
+                              if (isPerpanjangan()) {
+                                return acc + (item.biayaJasaLengkap || 0);
+                              }
+                              return acc + (item.biayaJasa || 0);
+                            }, 0) / filteredData.length
+                          ).toLocaleString()
+                        : 0
+                      }
+                    </p>
+                  </div>
                 </div>
-              </div>
-            </Card>
-          </TabsContent>
-        ))}
-      </Tabs>
+              </Card>
+            </TabsContent>
+          ))}
+        </Tabs>
+      </Card>
 
       {/* Add Dialog */}
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
@@ -698,6 +710,6 @@ export function BiayaLayanan() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </Card>
+    </div>
   );
 }
